@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import {
@@ -12,28 +12,38 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/constants';
+import type { Group } from '@/types';
 
-interface CreateGroupDialogProps {
+interface EditGroupDialogProps {
+  group: Group | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDialogProps) {
-  const { createGroup } = useApp();
+export default function EditGroupDialog({ group, open, onOpenChange }: EditGroupDialogProps) {
+  const { updateGroup } = useApp();
   const { t } = useLanguage();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY.code);
+
+  useEffect(() => {
+    if (group) {
+      setName(group.name);
+      setDescription(group.description || '');
+    }
+  }, [group]);
+
+  if (!group) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    createGroup(name.trim(), description.trim() || undefined, selectedCurrency);
-    setName('');
-    setDescription('');
-    setSelectedCurrency(DEFAULT_CURRENCY.code);
+    updateGroup(group.id, {
+      name: name.trim(),
+      description: description.trim() || undefined,
+    });
+
     onOpenChange(false);
   };
 
@@ -42,17 +52,17 @@ export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDia
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>{t.createNewGroup}</DialogTitle>
+            <DialogTitle>{t.editGroup}</DialogTitle>
             <DialogDescription>
-              {t.createGroupMessage}
+              {t.editGroupMessage}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">{t.groupName} *</Label>
+              <Label htmlFor="edit-name">{t.groupName} *</Label>
               <Input
-                id="name"
+                id="edit-name"
                 placeholder="Weekend Trip"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
@@ -61,29 +71,13 @@ export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDia
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="description">{t.descriptionOptional}</Label>
+              <Label htmlFor="edit-description">{t.descriptionOptional}</Label>
               <Input
-                id="description"
+                id="edit-description"
                 placeholder="Our adventure to the mountains"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="currency">{t.currency}</Label>
-              <select
-                id="currency"
-                value={selectedCurrency}
-                onChange={(e) => setSelectedCurrency(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                {CURRENCIES.map((currency) => (
-                  <option key={currency.code} value={currency.code}>
-                    {currency.symbol} - {currency.name} ({currency.code})
-                  </option>
-                ))}
-              </select>
             </div>
           </div>
 
@@ -96,7 +90,7 @@ export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDia
               {t.cancel}
             </Button>
             <Button type="submit" disabled={!name.trim()}>
-              {t.createGroup}
+              {t.saveChanges}
             </Button>
           </DialogFooter>
         </form>

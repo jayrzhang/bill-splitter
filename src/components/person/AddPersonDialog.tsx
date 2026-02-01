@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -20,6 +21,7 @@ interface AddPersonDialogProps {
 
 export default function AddPersonDialog({ groupId, open, onOpenChange }: AddPersonDialogProps) {
   const { addPerson } = useApp();
+  const { t } = useLanguage();
   const [name, setName] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -36,15 +38,15 @@ export default function AddPersonDialog({ groupId, open, onOpenChange }: AddPers
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add Person</DialogTitle>
+            <DialogTitle>{t.addPerson}</DialogTitle>
             <DialogDescription>
-              Add a new member to this group
+              {t.addPersonMessage}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="person-name">Name *</Label>
+              <Label htmlFor="person-name">{t.personName} *</Label>
               <Input
                 id="person-name"
                 placeholder="John Doe"
@@ -61,10 +63,10 @@ export default function AddPersonDialog({ groupId, open, onOpenChange }: AddPers
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t.cancel}
             </Button>
             <Button type="submit" disabled={!name.trim()}>
-              Add Person
+              {t.addPerson}
             </Button>
           </DialogFooter>
         </form>

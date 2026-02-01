@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -17,14 +18,18 @@ interface ShareGroupDialogProps {
 }
 
 export default function ShareGroupDialog({ group, open, onOpenChange }: ShareGroupDialogProps) {
+  const { t } = useLanguage();
   const [copied, setCopied] = useState(false);
 
   if (!group) return null;
 
-  const exportData = JSON.stringify(group, null, 2);
+  // Create shareable URL with base64-encoded group data
+  const groupData = JSON.stringify(group);
+  const encodedData = btoa(encodeURIComponent(groupData));
+  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(exportData);
+    navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -33,38 +38,37 @@ export default function ShareGroupDialog({ group, open, onOpenChange }: ShareGro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Share Group</DialogTitle>
+          <DialogTitle>{t.shareGroup}</DialogTitle>
           <DialogDescription>
-            Copy this group data and share it with others. They can import it to see the same expenses.
+            {t.shareGroupDescription}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
-          <div className="bg-muted p-4 rounded-lg max-h-64 overflow-auto">
-            <pre className="text-xs text-foreground whitespace-pre-wrap break-all">
-              {exportData}
-            </pre>
+          <div className="bg-muted p-4 rounded-lg">
+            <p className="text-sm text-foreground break-all">
+              {shareUrl}
+            </p>
           </div>
 
           <Button onClick={handleCopy} className="w-full">
             {copied ? (
               <>
                 <Check className="mr-2 h-4 w-4" />
-                Copied!
+                {t.copiedToClipboard}
               </>
             ) : (
               <>
                 <Copy className="mr-2 h-4 w-4" />
-                Copy Group Data
+                {t.copyShareLink}
               </>
             )}
           </Button>
 
           <div className="text-sm text-muted-foreground space-y-2">
-            <p><strong>Note:</strong> This app uses local storage, so data is only saved on your device.</p>
+            <p><strong>{t.howItWorks}</strong> {t.shareNote1}</p>
             <p>
-              To share with others, copy the data above and send it via your preferred method
-              (email, messaging app, etc.). Recipients can import it using the Import feature.
+              {t.shareNote2}
             </p>
           </div>
         </div>

@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { PlusCircle } from 'lucide-react';
 import type { Expense, Split } from '@/types';
 import { calculateEqualSplits, validateSplits } from '@/lib/calculations';
 import { formatCurrency } from '@/lib/utils';
@@ -68,15 +69,13 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
     );
   };
 
-  const autoAdjustSplits = () => {
-    if (customSplits.length === 0) return;
-
+  const addRemainingToPerson = (personId: string) => {
     const amountNum = parseFloat(amount);
     const totalCustomSplit = customSplits.reduce((sum, s) => sum + s.amount, 0);
     const difference = amountNum - totalCustomSplit;
 
-    const adjusted = customSplits.map((split, index) => {
-      if (index === 0) {
+    const adjusted = customSplits.map((split) => {
+      if (split.personId === personId) {
         return { ...split, amount: Number((split.amount + difference).toFixed(2)) };
       }
       return split;
@@ -227,25 +226,13 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label>Custom Amounts</Label>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`text-sm font-medium ${
-                        Math.abs(remaining) < 0.01 ? 'text-green-600' : 'text-amber-600'
-                      }`}
-                    >
-                      Remaining: {formatCurrency(remaining, group.currencySymbol)}
-                    </span>
-                    {Math.abs(remaining) > 0.01 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={autoAdjustSplits}
-                      >
-                        Auto-adjust
-                      </Button>
-                    )}
-                  </div>
+                  <span
+                    className={`text-sm font-medium ${
+                      Math.abs(remaining) < 0.01 ? 'text-green-600' : 'text-amber-600'
+                    }`}
+                  >
+                    Remaining: {formatCurrency(remaining, group.currencySymbol)}
+                  </span>
                 </div>
                 <div className="space-y-2">
                   {customSplits.map((split) => {
@@ -273,6 +260,18 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                             onChange={(e) => updateCustomSplit(split.personId, e.target.value)}
                             className="w-24"
                           />
+                          {Math.abs(remaining) > 0.01 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => addRemainingToPerson(split.personId)}
+                              title={`Add remaining ${formatCurrency(remaining, group.currencySymbol)} to ${member.name}`}
+                            >
+                              <PlusCircle className="h-4 w-4 text-primary" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     );

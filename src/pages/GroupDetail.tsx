@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Users, Share2 } from 'lucide-react';
+import { ArrowLeft, Plus, Users, Share2, Pencil, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/styles/animations';
 import AddPersonDialog from '@/components/person/AddPersonDialog';
@@ -11,13 +11,15 @@ import AddExpenseDialog from '@/components/expense/AddExpenseDialog';
 import ExpenseList from '@/components/expense/ExpenseList';
 import BalanceSummary from '@/components/balance/BalanceSummary';
 import ShareGroupDialog from '@/components/group/ShareGroupDialog';
+import EditGroupDialog from '@/components/group/EditGroupDialog';
 
 export default function GroupDetail() {
-  const { getCurrentGroup, setCurrentGroup } = useApp();
+  const { getCurrentGroup, setCurrentGroup, deleteGroup } = useApp();
   const group = getCurrentGroup();
   const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
+  const [isEditGroupDialogOpen, setIsEditGroupDialogOpen] = useState(false);
 
   if (!group) {
     return (
@@ -30,6 +32,13 @@ export default function GroupDetail() {
       </div>
     );
   }
+
+  const handleDeleteGroup = () => {
+    if (confirm(`Delete "${group.name}"? This will permanently remove all expenses and data.`)) {
+      deleteGroup(group.id);
+      setCurrentGroup(null);
+    }
+  };
 
   const hasMembers = group.members.length > 0;
   const canAddExpense = group.members.length >= 2;
@@ -55,20 +64,41 @@ export default function GroupDetail() {
           </Button>
 
           <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold tracking-tight mb-1">{group.name}</h1>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h1 className="text-3xl font-bold tracking-tight">{group.name}</h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsEditGroupDialogOpen(true)}
+                  className="h-8 w-8"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </div>
               {group.description && (
                 <p className="text-muted-foreground">{group.description}</p>
               )}
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsShareDialogOpen(true)}
-            >
-              <Share2 className="mr-2 h-4 w-4" />
-              Share
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsShareDialogOpen(true)}
+              >
+                <Share2 className="mr-2 h-4 w-4" />
+                Share
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleDeleteGroup}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -171,6 +201,12 @@ export default function GroupDetail() {
         group={group}
         open={isShareDialogOpen}
         onOpenChange={setIsShareDialogOpen}
+      />
+
+      <EditGroupDialog
+        group={group}
+        open={isEditGroupDialogOpen}
+        onOpenChange={setIsEditGroupDialogOpen}
       />
     </motion.div>
   );

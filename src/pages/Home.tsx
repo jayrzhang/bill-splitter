@@ -3,7 +3,7 @@ import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Plus, Users, Receipt } from 'lucide-react';
+import { Plus, Users, Receipt, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/styles/animations';
 import { formatDate, formatCurrency } from '@/lib/utils';
@@ -11,9 +11,16 @@ import CreateGroupDialog from '@/components/group/CreateGroupDialog';
 import LanguageSelector from '@/components/shared/LanguageSelector';
 
 export default function Home() {
-  const { groups, setCurrentGroup, getGroupSummary } = useApp();
+  const { groups, setCurrentGroup, getGroupSummary, deleteGroup } = useApp();
   const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+
+  const handleDeleteGroup = (e: React.MouseEvent, groupId: string, groupName: string) => {
+    e.stopPropagation();
+    if (confirm(`Delete "${groupName}"? This will permanently remove all expenses and data.`)) {
+      deleteGroup(groupId);
+    }
+  };
 
   const handleGroupClick = (groupId: string) => {
     setCurrentGroup(groupId);
@@ -88,14 +95,26 @@ export default function Home() {
               return (
                 <motion.div key={group.id} variants={fadeInUp}>
                   <Card
-                    className="cursor-pointer hover:shadow-md transition-shadow"
+                    className="group cursor-pointer hover:shadow-md transition-shadow"
                     onClick={() => handleGroupClick(group.id)}
                   >
                     <CardHeader>
-                      <CardTitle>{group.name}</CardTitle>
-                      {group.description && (
-                        <CardDescription>{group.description}</CardDescription>
-                      )}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle>{group.name}</CardTitle>
+                          {group.description && (
+                            <CardDescription>{group.description}</CardDescription>
+                          )}
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                          onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center gap-6 text-sm text-muted-foreground">

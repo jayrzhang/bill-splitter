@@ -47,6 +47,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const loadedCurrentGroupId = StorageService.loadCurrentGroupId();
     setCurrentGroupIdState(loadedCurrentGroupId);
 
+    // Check for shared group data in URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const shareData = urlParams.get('share');
+
+    if (shareData) {
+      try {
+        // Decode and parse the shared group data
+        const decodedData = decodeURIComponent(atob(shareData));
+        const sharedGroup: Group = JSON.parse(decodedData);
+
+        // Hydrate dates
+        sharedGroup.createdAt = new Date(sharedGroup.createdAt);
+        sharedGroup.updatedAt = new Date(sharedGroup.updatedAt);
+        sharedGroup.members = sharedGroup.members.map((m: any) => ({
+          ...m,
+          createdAt: new Date(m.createdAt),
+        }));
+        sharedGroup.expenses = sharedGroup.expenses.map((e: any) => ({
+          ...e,
+          date: new Date(e.date),
+          createdAt: new Date(e.createdAt),
+        }));
+        sharedGroup.settlements = sharedGroup.settlements.map((s: any) => ({
+          ...s,
+          settledAt: new Date(s.settledAt),
+        }));
+
+        // Check if group already exists
+        const groupExists = loadedGroups.some(g => g.id === sharedGroup.id);
+
+        if (!groupExists) {
+          // Prompt user to import
+          if (confirm(`Import group "${sharedGroup.name}"? This will add it to your local storage.`)) {
+            setGroups([...loadedGroups, sharedGroup]);
+            setCurrentGroupIdState(sharedGroup.id);
+          }
+        } else {
+          // Group already exists
+          if (confirm(`Group "${sharedGroup.name}" already exists. View it?`)) {
+            setCurrentGroupIdState(sharedGroup.id);
+          }
+        }
+
+        // Clean up URL
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch (error) {
+        console.error('Failed to import shared group:', error);
+        alert('Failed to import group. The share link may be invalid.');
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+    }
+
     setIsInitialized(true);
   }, []);
 

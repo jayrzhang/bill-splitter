@@ -28,6 +28,17 @@ export interface Translations {
   descriptionOptional: string;
   createNewGroup: string;
   createGroupMessage: string;
+  currency: string;
+  editGroup: string;
+  editGroupMessage: string;
+  saveChanges: string;
+  deleteGroup: string;
+  deleteGroupConfirm: string;
+  goToHome: string;
+  backToGroups: string;
+  share: string;
+  noGroupSelected: string;
+  noGroupMessage: string;
 
   // Person
   addPerson: string;
@@ -77,8 +88,14 @@ export interface Translations {
   // Share
   shareGroup: string;
   shareGroupMessage: string;
+  shareGroupDescription: string;
   copyLink: string;
+  copyShareLink: string;
   linkCopied: string;
+  copiedToClipboard: string;
+  howItWorks: string;
+  shareNote1: string;
+  shareNote2: string;
 
   // Errors
   errorLoadingGroups: string;
@@ -120,6 +137,17 @@ export const translations: Record<Language, Translations> = {
     descriptionOptional: 'Description (Optional)',
     createNewGroup: 'Create New Group',
     createGroupMessage: 'Create a group to split expenses with friends',
+    currency: 'Currency',
+    editGroup: 'Edit Group',
+    editGroupMessage: 'Update the group name and description',
+    saveChanges: 'Save Changes',
+    deleteGroup: 'Delete',
+    deleteGroupConfirm: 'Delete this group? This will permanently remove all expenses and data.',
+    goToHome: 'Go to Home',
+    backToGroups: 'Back to Groups',
+    share: 'Share',
+    noGroupSelected: 'No group selected',
+    noGroupMessage: 'Please select a group to continue',
 
     // Person
     addPerson: 'Add Person',
@@ -169,8 +197,14 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'Share Group',
     shareGroupMessage: 'Share this group with others',
+    shareGroupDescription: 'Copy this link and share it with others. They can open it to import the group data.',
     copyLink: 'Copy Link',
+    copyShareLink: 'Copy Share Link',
     linkCopied: 'Link copied!',
+    copiedToClipboard: 'Copied to Clipboard!',
+    howItWorks: 'How it works:',
+    shareNote1: 'This app uses local storage, so data is saved only on your device.',
+    shareNote2: 'When someone opens this link, they\'ll be prompted to import the group data to their own device. Changes made by others won\'t sync back to you.',
 
     // Errors
     errorLoadingGroups: 'Failed to load groups',
@@ -211,6 +245,17 @@ export const translations: Record<Language, Translations> = {
     descriptionOptional: '説明（オプション）',
     createNewGroup: '新規グループを作成',
     createGroupMessage: '友達と経費を分割するグループを作成',
+    currency: '通貨',
+    editGroup: 'グループを編集',
+    editGroupMessage: 'グループ名と説明を更新',
+    saveChanges: '変更を保存',
+    deleteGroup: '削除',
+    deleteGroupConfirm: 'このグループを削除しますか？すべての経費とデータが完全に削除されます。',
+    goToHome: 'ホームへ',
+    backToGroups: 'グループ一覧へ戻る',
+    share: '共有',
+    noGroupSelected: 'グループが選択されていません',
+    noGroupMessage: '続けるにはグループを選択してください',
 
     // Person
     addPerson: 'メンバーを追加',
@@ -260,8 +305,14 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'グループを共有',
     shareGroupMessage: 'このグループを他の人と共有',
+    shareGroupDescription: 'このリンクをコピーして他の人と共有してください。リンクを開くとグループデータをインポートできます。',
     copyLink: 'リンクをコピー',
+    copyShareLink: '共有リンクをコピー',
     linkCopied: 'リンクをコピーしました！',
+    copiedToClipboard: 'クリップボードにコピーしました！',
+    howItWorks: '仕組み：',
+    shareNote1: 'このアプリはローカルストレージを使用しているため、データはデバイスにのみ保存されます。',
+    shareNote2: '他の人がこのリンクを開くと、自分のデバイスにグループデータをインポートするよう促されます。他の人が行った変更はあなたに同期されません。',
 
     // Errors
     errorLoadingGroups: 'グループの読み込みに失敗しました',
@@ -302,6 +353,17 @@ export const translations: Record<Language, Translations> = {
     descriptionOptional: '描述（可选）',
     createNewGroup: '创建新群组',
     createGroupMessage: '创建一个群组与朋友分摊费用',
+    currency: '货币',
+    editGroup: '编辑群组',
+    editGroupMessage: '更新群组名称和描述',
+    saveChanges: '保存更改',
+    deleteGroup: '删除',
+    deleteGroupConfirm: '删除此群组？这将永久删除所有费用和数据。',
+    goToHome: '返回首页',
+    backToGroups: '返回群组列表',
+    share: '分享',
+    noGroupSelected: '未选择群组',
+    noGroupMessage: '请选择一个群组以继续',
 
     // Person
     addPerson: '添加成员',
@@ -351,8 +413,14 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: '分享群组',
     shareGroupMessage: '与他人分享此群组',
+    shareGroupDescription: '复制此链接并与他人分享。他们可以打开链接导入群组数据。',
     copyLink: '复制链接',
+    copyShareLink: '复制分享链接',
     linkCopied: '链接已复制！',
+    copiedToClipboard: '已复制到剪贴板！',
+    howItWorks: '工作原理：',
+    shareNote1: '此应用使用本地存储，因此数据仅保存在您的设备上。',
+    shareNote2: '当其他人打开此链接时，他们将被提示将群组数据导入到自己的设备。其他人所做的更改不会同步回您。',
 
     // Errors
     errorLoadingGroups: '加载群组失败',
