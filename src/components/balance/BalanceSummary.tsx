@@ -53,7 +53,7 @@ export default function BalanceSummary({ groupId }: BalanceSummaryProps) {
       {/* Net Balances */}
       <div>
         <h3 className="text-lg font-semibold mb-4">Net Balances</h3>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div key={`balances-${balances.length}-${summary.totalExpenses}`} className="grid gap-3 sm:grid-cols-2">
           {/* People who are owed money */}
           {creditors.map((balance) => {
             const person = getPerson(balance.personId);
@@ -166,6 +166,7 @@ export default function BalanceSummary({ groupId }: BalanceSummaryProps) {
         <div>
           <h3 className="text-lg font-semibold mb-4">Suggested Payments</h3>
           <motion.div
+            key={`debts-${simplifiedDebts.length}-${summary.totalExpenses}`}
             className="space-y-3"
             variants={staggerContainer}
             initial="initial"
