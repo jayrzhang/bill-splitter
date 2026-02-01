@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { Group, Person, Expense, Settlement, GroupSummary } from '@/types';
 import { StorageService } from '@/lib/storage';
 import { generateId } from '@/lib/utils';
