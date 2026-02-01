@@ -197,7 +197,7 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'Share Group',
     shareGroupMessage: 'Share this group with others',
-    shareGroupDescription: 'Copy this link and share it with others. They can open it to import the group data.',
+    shareGroupDescription: 'Copy this link to share the group structure (name, members, currency). Recipients start with an empty expense list.',
     copyLink: 'Copy Link',
     copyShareLink: 'Copy Share Link',
     linkCopied: 'Link copied!',
@@ -305,7 +305,7 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'グループを共有',
     shareGroupMessage: 'このグループを他の人と共有',
-    shareGroupDescription: 'このリンクをコピーして他の人と共有してください。リンクを開くとグループデータをインポートできます。',
+    shareGroupDescription: 'このリンクをコピーしてグループ構造（名前、メンバー、通貨）を共有します。受信者は空の経費リストから始めます。',
     copyLink: 'リンクをコピー',
     copyShareLink: '共有リンクをコピー',
     linkCopied: 'リンクをコピーしました！',
@@ -413,7 +413,7 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: '分享群组',
     shareGroupMessage: '与他人分享此群组',
-    shareGroupDescription: '复制此链接并与他人分享。他们可以打开链接导入群组数据。',
+    shareGroupDescription: '复制此链接以分享群组结构（名称、成员、货币）。接收者将从空费用列表开始。',
     copyLink: '复制链接',
     copyShareLink: '复制分享链接',
     linkCopied: '链接已复制！',

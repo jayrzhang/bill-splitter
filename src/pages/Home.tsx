@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -11,7 +12,8 @@ import CreateGroupDialog from '@/components/group/CreateGroupDialog';
 import LanguageSelector from '@/components/shared/LanguageSelector';
 
 export default function Home() {
-  const { groups, setCurrentGroup, getGroupSummary, deleteGroup } = useApp();
+  const navigate = useNavigate();
+  const { groups, getGroupSummary, deleteGroup } = useApp();
   const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
@@ -23,8 +25,7 @@ export default function Home() {
   };
 
   const handleGroupClick = (groupId: string) => {
-    setCurrentGroup(groupId);
-    // Navigation will be handled by router later
+    navigate(`/group/${groupId}`);
   };
 
   return (

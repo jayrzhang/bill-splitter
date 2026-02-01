@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,8 +15,10 @@ import ShareGroupDialog from '@/components/group/ShareGroupDialog';
 import EditGroupDialog from '@/components/group/EditGroupDialog';
 
 export default function GroupDetail() {
-  const { getCurrentGroup, setCurrentGroup, deleteGroup } = useApp();
-  const group = getCurrentGroup();
+  const { groupId } = useParams<{ groupId: string }>();
+  const navigate = useNavigate();
+  const { groups, deleteGroup } = useApp();
+  const group = groups.find(g => g.id === groupId);
   const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false);
   const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
@@ -25,9 +28,9 @@ export default function GroupDetail() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">No group selected</h2>
-          <p className="text-muted-foreground mb-4">Please select a group to continue</p>
-          <Button onClick={() => setCurrentGroup(null)}>Go to Home</Button>
+          <h2 className="text-2xl font-bold mb-2">Group not found</h2>
+          <p className="text-muted-foreground mb-4">The group you're looking for doesn't exist</p>
+          <Button onClick={() => navigate('/')}>Go to Home</Button>
         </div>
       </div>
     );
@@ -36,7 +39,7 @@ export default function GroupDetail() {
   const handleDeleteGroup = () => {
     if (confirm(`Delete "${group.name}"? This will permanently remove all expenses and data.`)) {
       deleteGroup(group.id);
-      setCurrentGroup(null);
+      navigate('/');
     }
   };
 
@@ -56,7 +59,7 @@ export default function GroupDetail() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setCurrentGroup(null)}
+            onClick={() => navigate('/')}
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

@@ -82,17 +82,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
           // Prompt user to import
           if (confirm(`Import group "${sharedGroup.name}"? This will add it to your local storage.`)) {
             setGroups([...loadedGroups, sharedGroup]);
-            setCurrentGroupIdState(sharedGroup.id);
+            // Navigate to the imported group
+            window.location.href = `/group/${sharedGroup.id}`;
+            return;
           }
         } else {
           // Group already exists
           if (confirm(`Group "${sharedGroup.name}" already exists. View it?`)) {
-            setCurrentGroupIdState(sharedGroup.id);
+            window.location.href = `/group/${sharedGroup.id}`;
+            return;
           }
         }
 
-        // Clean up URL
-        window.history.replaceState({}, '', window.location.pathname);
+        // Clean up URL if user declined
+        window.history.replaceState({}, '', '/');
       } catch (error) {
         console.error('Failed to import shared group:', error);
         alert('Failed to import group. The share link may be invalid.');

@@ -23,10 +23,24 @@ export default function ShareGroupDialog({ group, open, onOpenChange }: ShareGro
 
   if (!group) return null;
 
-  // Create shareable URL with base64-encoded group data
-  const groupData = JSON.stringify(group);
+  // Create shareable URL with base64-encoded group STRUCTURE ONLY (no expenses)
+  // This keeps URLs short and makes sense for collaboration: create group together, then add expenses
+  const groupStructure = {
+    id: group.id,
+    name: group.name,
+    description: group.description,
+    currency: group.currency,
+    currencySymbol: group.currencySymbol,
+    members: group.members,
+    createdAt: group.createdAt,
+    updatedAt: group.updatedAt,
+    // Intentionally exclude expenses and settlements to keep URL short
+    expenses: [],
+    settlements: []
+  };
+  const groupData = JSON.stringify(groupStructure);
   const encodedData = btoa(encodeURIComponent(groupData));
-  const shareUrl = `${window.location.origin}${window.location.pathname}?share=${encodedData}`;
+  const shareUrl = `${window.location.origin}/?share=${encodedData}`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);
