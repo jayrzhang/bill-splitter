@@ -81,7 +81,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!groupExists) {
           // Prompt user to import
           if (confirm(`Import group "${sharedGroup.name}"? This will add it to your local storage.`)) {
-            setGroups([...loadedGroups, sharedGroup]);
+            const updatedGroups = [...loadedGroups, sharedGroup];
+            setGroups(updatedGroups);
+            // CRITICAL: Save to localStorage synchronously BEFORE navigation
+            // Otherwise the page reloads before React's useEffect can save
+            StorageService.saveGroups(updatedGroups);
             // Navigate to the imported group
             window.location.href = `/group/${sharedGroup.id}`;
             return;
