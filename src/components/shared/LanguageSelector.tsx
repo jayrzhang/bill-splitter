@@ -1,7 +1,7 @@
 import { Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Language, languageNames } from '@/i18n/translations';
+import { type Language, languageNames } from '@/i18n/translations';
 import {
   Dialog,
   DialogContent,
