@@ -27,9 +27,16 @@ export default function GroupDetail() {
   if (!group) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold mb-2">Group not found</h2>
-          <p className="text-muted-foreground mb-4">The group you're looking for doesn't exist</p>
+        <div className="text-center max-w-md mx-auto p-6">
+          <h2 className="text-2xl font-bold mb-3">Group Not Found</h2>
+          <p className="text-muted-foreground mb-2">
+            This group doesn't exist in your browser's storage.
+          </p>
+          <p className="text-sm text-muted-foreground mb-6">
+            <strong>Why?</strong> This app uses local storage - data only exists on the device where it was created.
+            If you received a share link, it only contains the group structure (name, members).
+            You'll need to create expenses together.
+          </p>
           <Button onClick={() => navigate('/')}>Go to Home</Button>
         </div>
       </div>
