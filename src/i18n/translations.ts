@@ -123,7 +123,7 @@ export const translations: Record<Language, Translations> = {
     language: 'Language',
 
     // App title
-    appTitle: 'Bill Splitter',
+    appTitle: 'Splitaa',
     appTagline: 'Split expenses and settle debts with friends',
 
     // Home page

@@ -1,4 +1,4 @@
-# Bill Splitter
+# Splitaa
 
 A sophisticated bill-splitting web application for managing group expenses and calculating who owes whom. Built with React, TypeScript, and Tailwind CSS.
 
