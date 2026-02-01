@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Users, Receipt } from 'lucide-react';
@@ -7,9 +8,11 @@ import { motion } from 'framer-motion';
 import { fadeInUp, staggerContainer } from '@/styles/animations';
 import { formatDate, formatCurrency } from '@/lib/utils';
 import CreateGroupDialog from '@/components/group/CreateGroupDialog';
+import LanguageSelector from '@/components/shared/LanguageSelector';
 
 export default function Home() {
   const { groups, setCurrentGroup, getGroupSummary } = useApp();
+  const { t } = useLanguage();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   const handleGroupClick = (groupId: string) => {
@@ -27,10 +30,13 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <h1 className="text-4xl font-bold tracking-tight mb-2">Bill Splitter</h1>
-          <p className="text-muted-foreground">
-            Split expenses and settle debts with friends
-          </p>
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight mb-2">{t.appTitle}</h1>
+              <p className="text-muted-foreground">{t.appTagline}</p>
+            </div>
+            <LanguageSelector />
+          </div>
         </motion.div>
 
         {/* Create Group Button */}
@@ -46,7 +52,7 @@ export default function Home() {
             size="lg"
           >
             <Plus className="mr-2 h-5 w-5" />
-            New Group
+            {t.newGroup}
           </Button>
         </motion.div>
 
@@ -61,13 +67,13 @@ export default function Home() {
             <div className="mx-auto w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
               <Users className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No groups yet</h3>
+            <h3 className="text-lg font-semibold mb-2">{t.noGroupsYet}</h3>
             <p className="text-muted-foreground mb-6">
-              Create your first group to start splitting expenses
+              {t.noGroupsMessage}
             </p>
             <Button onClick={() => setIsCreateDialogOpen(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              Create Group
+              {t.createGroup}
             </Button>
           </motion.div>
         ) : (
@@ -95,11 +101,11 @@ export default function Home() {
                       <div className="flex items-center gap-6 text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                           <Users className="h-4 w-4" />
-                          <span>{group.members.length} members</span>
+                          <span>{group.members.length} {t.members}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <Receipt className="h-4 w-4" />
-                          <span>{summary?.expenseCount || 0} expenses</span>
+                          <span>{summary?.expenseCount || 0} {t.expenses}</span>
                         </div>
                         {summary && summary.totalExpenses > 0 && (
                           <div className="ml-auto font-medium text-foreground">
@@ -108,7 +114,7 @@ export default function Home() {
                         )}
                       </div>
                       <div className="mt-2 text-xs text-muted-foreground">
-                        Updated {formatDate(group.updatedAt)}
+                        {t.updated} {formatDate(group.updatedAt)}
                       </div>
                     </CardContent>
                   </Card>

@@ -1,11 +1,14 @@
+import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Trash2, Receipt } from 'lucide-react';
+import { Trash2, Receipt, Pencil } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { listItem, staggerContainer } from '@/styles/animations';
 import { formatCurrency, formatDate } from '@/lib/utils';
+import EditExpenseDialog from './EditExpenseDialog';
+import type { Expense } from '@/types';
 
 interface ExpenseListProps {
   groupId: string;
@@ -13,6 +16,7 @@ interface ExpenseListProps {
 
 export default function ExpenseList({ groupId }: ExpenseListProps) {
   const { groups, deleteExpense } = useApp();
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const group = groups.find((g) => g.id === groupId);
 
   if (!group) return null;
@@ -106,18 +110,30 @@ export default function ExpenseList({ groupId }: ExpenseListProps) {
                       </div>
                     </div>
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={() => {
-                        if (confirm('Delete this expense?')) {
-                          deleteExpense(expense.id);
-                        }
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setEditingExpense(expense);
+                        }}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm('Delete this expense?')) {
+                            deleteExpense(expense.id);
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -125,6 +141,11 @@ export default function ExpenseList({ groupId }: ExpenseListProps) {
           </motion.div>
         );
       })}
+      <EditExpenseDialog
+        expense={editingExpense}
+        open={editingExpense !== null}
+        onOpenChange={(open) => !open && setEditingExpense(null)}
+      />
     </motion.div>
   );
 }

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Users, Settings } from 'lucide-react';
+import { ArrowLeft, Plus, Users, Share2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/styles/animations';
 import AddPersonDialog from '@/components/person/AddPersonDialog';
@@ -10,12 +10,14 @@ import PersonList from '@/components/person/PersonList';
 import AddExpenseDialog from '@/components/expense/AddExpenseDialog';
 import ExpenseList from '@/components/expense/ExpenseList';
 import BalanceSummary from '@/components/balance/BalanceSummary';
+import ShareGroupDialog from '@/components/group/ShareGroupDialog';
 
 export default function GroupDetail() {
   const { getCurrentGroup, setCurrentGroup } = useApp();
   const group = getCurrentGroup();
   const [isAddPersonDialogOpen, setIsAddPersonDialogOpen] = useState(false);
   const [isAddExpenseDialogOpen, setIsAddExpenseDialogOpen] = useState(false);
+  const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
 
   if (!group) {
     return (
@@ -59,8 +61,13 @@ export default function GroupDetail() {
                 <p className="text-muted-foreground">{group.description}</p>
               )}
             </div>
-            <Button variant="outline" size="icon">
-              <Settings className="h-4 w-4" />
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsShareDialogOpen(true)}
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              Share
             </Button>
           </div>
         </div>
@@ -159,6 +166,12 @@ export default function GroupDetail() {
           onOpenChange={setIsAddExpenseDialogOpen}
         />
       )}
+
+      <ShareGroupDialog
+        group={group}
+        open={isShareDialogOpen}
+        onOpenChange={setIsShareDialogOpen}
+      />
     </motion.div>
   );
 }

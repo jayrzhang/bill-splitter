@@ -3,7 +3,7 @@ import type { Group, Person, Expense, Settlement, GroupSummary } from '@/types';
 import { StorageService } from '@/lib/storage';
 import { generateId } from '@/lib/utils';
 import { calculateBalances, simplifyDebts } from '@/lib/calculations';
-import { PERSON_COLORS, DEFAULT_CURRENCY } from '@/lib/constants';
+import { PERSON_COLORS, DEFAULT_CURRENCY, CURRENCIES } from '@/lib/constants';
 
 interface AppContextType {
   // State
@@ -11,7 +11,7 @@ interface AppContextType {
   currentGroupId: string | null;
 
   // Group operations
-  createGroup: (name: string, description?: string) => Group;
+  createGroup: (name: string, description?: string, currencyCode?: string) => Group;
   updateGroup: (id: string, updates: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
   setCurrentGroup: (id: string | null) => void;
@@ -37,6 +37,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [groups, setGroups] = useState<Group[]>([]);
   const [currentGroupId, setCurrentGroupIdState] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load data from storage on mount
   useEffect(() => {
@@ -45,28 +46,33 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     const loadedCurrentGroupId = StorageService.loadCurrentGroupId();
     setCurrentGroupIdState(loadedCurrentGroupId);
+
+    setIsInitialized(true);
   }, []);
 
-  // Save groups to storage whenever they change
+  // Save groups to storage whenever they change (after initial load)
   useEffect(() => {
-    if (groups.length > 0) {
+    if (isInitialized) {
       StorageService.saveGroups(groups);
     }
-  }, [groups]);
+  }, [groups, isInitialized]);
 
-  // Save current group ID whenever it changes
+  // Save current group ID whenever it changes (after initial load)
   useEffect(() => {
-    StorageService.saveCurrentGroupId(currentGroupId);
-  }, [currentGroupId]);
+    if (isInitialized) {
+      StorageService.saveCurrentGroupId(currentGroupId);
+    }
+  }, [currentGroupId, isInitialized]);
 
   // Group operations
-  const createGroup = (name: string, description?: string): Group => {
+  const createGroup = (name: string, description?: string, currencyCode?: string): Group => {
+    const currency = CURRENCIES.find(c => c.code === currencyCode) || DEFAULT_CURRENCY;
     const newGroup: Group = {
       id: generateId(),
       name,
       description,
-      currency: DEFAULT_CURRENCY.code,
-      currencySymbol: DEFAULT_CURRENCY.symbol,
+      currency: currency.code,
+      currencySymbol: currency.symbol,
       members: [],
       expenses: [],
       settlements: [],

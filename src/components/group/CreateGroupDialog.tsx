@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { CURRENCIES, DEFAULT_CURRENCY } from '@/lib/constants';
 
 interface CreateGroupDialogProps {
   open: boolean;
@@ -21,14 +22,16 @@ export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDia
   const { createGroup } = useApp();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState(DEFAULT_CURRENCY.code);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    createGroup(name.trim(), description.trim() || undefined);
+    createGroup(name.trim(), description.trim() || undefined, selectedCurrency);
     setName('');
     setDescription('');
+    setSelectedCurrency(DEFAULT_CURRENCY.code);
     onOpenChange(false);
   };
 
@@ -63,6 +66,22 @@ export default function CreateGroupDialog({ open, onOpenChange }: CreateGroupDia
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="currency">Currency</Label>
+              <select
+                id="currency"
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                {CURRENCIES.map((currency) => (
+                  <option key={currency.code} value={currency.code}>
+                    {currency.symbol} - {currency.name} ({currency.code})
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
