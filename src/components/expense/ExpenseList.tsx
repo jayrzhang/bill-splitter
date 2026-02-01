@@ -49,6 +49,7 @@ export default function ExpenseList({ groupId }: ExpenseListProps) {
 
   return (
     <motion.div
+      key={`expenses-${sortedExpenses.length}`}
       className="space-y-3"
       variants={staggerContainer}
       initial="initial"

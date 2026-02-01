@@ -42,6 +42,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Load data from storage on mount
   useEffect(() => {
     const loadedGroups = StorageService.loadGroups();
+    console.log('[AppContext] Loading groups from storage:', loadedGroups);
     setGroups(loadedGroups);
 
     const loadedCurrentGroupId = StorageService.loadCurrentGroupId();
@@ -105,6 +106,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Save groups to storage whenever they change (after initial load)
   useEffect(() => {
     if (isInitialized) {
+      console.log('[AppContext] Saving groups to storage:', groups);
       StorageService.saveGroups(groups);
     }
   }, [groups, isInitialized]);

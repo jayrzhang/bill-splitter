@@ -85,6 +85,7 @@ export default function Home() {
           </motion.div>
         ) : (
           <motion.div
+            key={`groups-${groups.length}`}
             className="grid gap-4"
             variants={staggerContainer}
             initial="initial"
