@@ -9,6 +9,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, Copy } from 'lucide-react';
+import { compressToEncodedURIComponent } from 'lz-string';
 import type { Group } from '@/types';
 
 interface ShareGroupDialogProps {
@@ -23,24 +24,23 @@ export default function ShareGroupDialog({ group, open, onOpenChange }: ShareGro
 
   if (!group) return null;
 
-  // Create shareable URL with base64-encoded group STRUCTURE ONLY (no expenses)
-  // This keeps URLs short and makes sense for collaboration: create group together, then add expenses
-  const groupStructure = {
+  // Create shareable URL with compressed group data (ALL expenses included for read-only viewing)
+  // Uses lz-string compression to keep URLs manageable even with many expenses
+  const fullGroupData = {
     id: group.id,
     name: group.name,
     description: group.description,
     currency: group.currency,
     currencySymbol: group.currencySymbol,
     members: group.members,
+    expenses: group.expenses,
+    settlements: group.settlements,
     createdAt: group.createdAt,
     updatedAt: group.updatedAt,
-    // Intentionally exclude expenses and settlements to keep URL short
-    expenses: [],
-    settlements: []
   };
-  const groupData = JSON.stringify(groupStructure);
-  const encodedData = btoa(encodeURIComponent(groupData));
-  const shareUrl = `${window.location.origin}/?share=${encodedData}`;
+  const groupData = JSON.stringify(fullGroupData);
+  const compressedData = compressToEncodedURIComponent(groupData);
+  const shareUrl = `${window.location.origin}/?share=${compressedData}&readonly=true`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(shareUrl);

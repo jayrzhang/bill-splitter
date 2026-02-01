@@ -7,17 +7,30 @@ import { CheckCircle2, ArrowRight, TrendingUp, TrendingDown, Minus } from 'lucid
 import { motion } from 'framer-motion';
 import { listItem, staggerContainer } from '@/styles/animations';
 import { formatCurrency } from '@/lib/utils';
-import type { Debt } from '@/types';
+import type { Debt, Group } from '@/types';
+import { calculateBalances, simplifyDebts } from '@/lib/calculations';
 
 interface BalanceSummaryProps {
   groupId: string;
+  readOnly?: boolean;
+  group?: Group; // Optional prop for readonly mode
 }
 
-export default function BalanceSummary({ groupId }: BalanceSummaryProps) {
+export default function BalanceSummary({ groupId, readOnly = false, group: propGroup }: BalanceSummaryProps) {
   const { getGroupSummary, addSettlement, groups } = useApp();
-  const summary = getGroupSummary(groupId);
-  const group = groups.find((g) => g.id === groupId);
+  const group = propGroup || groups.find((g) => g.id === groupId);
   const [settlingDebt, setSettlingDebt] = useState<Debt | null>(null);
+
+  // Calculate summary - use prop group if provided (readonly mode), otherwise use context
+  const summary = propGroup
+    ? {
+        group: propGroup,
+        balances: calculateBalances(propGroup),
+        simplifiedDebts: simplifyDebts(calculateBalances(propGroup)),
+        totalExpenses: propGroup.expenses.reduce((sum, e) => sum + e.amount, 0),
+        expenseCount: propGroup.expenses.length,
+      }
+    : getGroupSummary(groupId);
 
   if (!summary || !group) return null;
 
@@ -215,15 +228,17 @@ export default function BalanceSummary({ groupId }: BalanceSummaryProps) {
                         </Avatar>
 
                         {/* Settle Button */}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleSettle(debt)}
-                          className="ml-2"
-                        >
-                          <CheckCircle2 className="mr-2 h-4 w-4" />
-                          Settle
-                        </Button>
+                        {!readOnly && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleSettle(debt)}
+                            className="ml-2"
+                          >
+                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            Settle
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>

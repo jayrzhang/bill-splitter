@@ -8,16 +8,18 @@ import { motion } from 'framer-motion';
 import { listItem, staggerContainer } from '@/styles/animations';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import EditExpenseDialog from './EditExpenseDialog';
-import type { Expense } from '@/types';
+import type { Expense, Group } from '@/types';
 
 interface ExpenseListProps {
   groupId: string;
+  readOnly?: boolean;
+  group?: Group; // Optional prop for readonly mode
 }
 
-export default function ExpenseList({ groupId }: ExpenseListProps) {
+export default function ExpenseList({ groupId, readOnly = false, group: propGroup }: ExpenseListProps) {
   const { groups, deleteExpense } = useApp();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const group = groups.find((g) => g.id === groupId);
+  const group = propGroup || groups.find((g) => g.id === groupId);
 
   if (!group) return null;
 
@@ -111,30 +113,32 @@ export default function ExpenseList({ groupId }: ExpenseListProps) {
                       </div>
                     </div>
 
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setEditingExpense(expense);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (confirm('Delete this expense?')) {
-                            deleteExpense(expense.id);
-                          }
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {!readOnly && (
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingExpense(expense);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('Delete this expense?')) {
+                              deleteExpense(expense.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
@@ -142,11 +146,13 @@ export default function ExpenseList({ groupId }: ExpenseListProps) {
           </motion.div>
         );
       })}
-      <EditExpenseDialog
-        expense={editingExpense}
-        open={editingExpense !== null}
-        onOpenChange={(open) => !open && setEditingExpense(null)}
-      />
+      {!readOnly && (
+        <EditExpenseDialog
+          expense={editingExpense}
+          open={editingExpense !== null}
+          onOpenChange={(open) => !open && setEditingExpense(null)}
+        />
+      )}
     </motion.div>
   );
 }

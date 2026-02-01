@@ -7,9 +7,10 @@ import { listItem } from '@/styles/animations';
 
 interface PersonListProps {
   groupId: string;
+  readOnly?: boolean;
 }
 
-export default function PersonList({ groupId }: PersonListProps) {
+export default function PersonList({ groupId, readOnly = false }: PersonListProps) {
   const { groups, removePerson } = useApp();
   const group = groups.find((g) => g.id === groupId);
 
@@ -47,14 +48,16 @@ export default function PersonList({ groupId }: PersonListProps) {
               </AvatarFallback>
             </Avatar>
             <span className="text-sm font-medium">{person.name}</span>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-              onClick={() => removePerson(groupId, person.id)}
-            >
-              <X className="h-3 w-3" />
-            </Button>
+            {!readOnly && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                onClick={() => removePerson(groupId, person.id)}
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            )}
           </div>
         </motion.div>
       ))}

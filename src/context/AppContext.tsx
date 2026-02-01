@@ -4,6 +4,7 @@ import { StorageService } from '@/lib/storage';
 import { generateId } from '@/lib/utils';
 import { calculateBalances, simplifyDebts } from '@/lib/calculations';
 import { PERSON_COLORS, DEFAULT_CURRENCY, CURRENCIES } from '@/lib/constants';
+import { decompressFromEncodedURIComponent } from 'lz-string';
 
 interface AppContextType {
   // State
@@ -51,12 +52,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
     // Check for shared group data in URL
     const urlParams = new URLSearchParams(window.location.search);
     const shareData = urlParams.get('share');
+    const isReadOnly = urlParams.get('readonly') === 'true';
 
     if (shareData) {
       try {
-        // Decode and parse the shared group data
-        const decodedData = decodeURIComponent(atob(shareData));
-        const sharedGroup: Group = JSON.parse(decodedData);
+        // Decompress and parse the shared group data (using lz-string compression)
+        const decompressedData = decompressFromEncodedURIComponent(shareData);
+        if (!decompressedData) {
+          throw new Error('Failed to decompress share data');
+        }
+        const sharedGroup: Group = JSON.parse(decompressedData);
 
         // Hydrate dates
         sharedGroup.createdAt = new Date(sharedGroup.createdAt);
@@ -75,7 +80,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
           settledAt: new Date(s.settledAt),
         }));
 
-        // Check if group already exists
+        if (isReadOnly) {
+          // Read-only mode: Store in sessionStorage (temporary, doesn't persist)
+          sessionStorage.setItem(`readonly_group_${sharedGroup.id}`, JSON.stringify(sharedGroup));
+          window.location.href = `/group/${sharedGroup.id}?readonly=true`;
+          return;
+        }
+
+        // Editable mode: Check if group already exists
         const groupExists = loadedGroups.some(g => g.id === sharedGroup.id);
 
         if (!groupExists) {

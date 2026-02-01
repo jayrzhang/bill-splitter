@@ -97,6 +97,10 @@ export interface Translations {
   shareNote1: string;
   shareNote2: string;
 
+  // Read-only view
+  readOnlyView: string;
+  readOnlyMessage: string;
+
   // Errors
   errorLoadingGroups: string;
   errorSavingData: string;
@@ -197,14 +201,18 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'Share Group',
     shareGroupMessage: 'Share this group with others',
-    shareGroupDescription: 'Copy this link to share the group structure (name, members, currency). Recipients start with an empty expense list.',
+    shareGroupDescription: 'Share a read-only snapshot of this group including all expenses and balances. Recipients can view but cannot edit.',
     copyLink: 'Copy Link',
     copyShareLink: 'Copy Share Link',
     linkCopied: 'Link copied!',
     copiedToClipboard: 'Copied to Clipboard!',
     howItWorks: 'How it works:',
-    shareNote1: 'This app uses local storage, so data is saved only on your device.',
-    shareNote2: 'When someone opens this link, they\'ll be prompted to import the group data to their own device. Changes made by others won\'t sync back to you.',
+    shareNote1: 'The link contains a compressed snapshot of your group data.',
+    shareNote2: 'Recipients can view expenses and balances in read-only mode. To make their own changes, they need to create a new group.',
+
+    // Read-only view
+    readOnlyView: 'Read-Only View',
+    readOnlyMessage: 'You\'re viewing a shared snapshot of this group. You cannot make changes. To track your own expenses, create a new group or import this one to your account.',
 
     // Errors
     errorLoadingGroups: 'Failed to load groups',
@@ -305,14 +313,18 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: 'グループを共有',
     shareGroupMessage: 'このグループを他の人と共有',
-    shareGroupDescription: 'このリンクをコピーしてグループ構造（名前、メンバー、通貨）を共有します。受信者は空の経費リストから始めます。',
+    shareGroupDescription: 'すべての経費と残高を含むグループの読み取り専用スナップショットを共有します。受信者は閲覧のみ可能で、編集はできません。',
     copyLink: 'リンクをコピー',
     copyShareLink: '共有リンクをコピー',
     linkCopied: 'リンクをコピーしました！',
     copiedToClipboard: 'クリップボードにコピーしました！',
     howItWorks: '仕組み：',
-    shareNote1: 'このアプリはローカルストレージを使用しているため、データはデバイスにのみ保存されます。',
-    shareNote2: '他の人がこのリンクを開くと、自分のデバイスにグループデータをインポートするよう促されます。他の人が行った変更はあなたに同期されません。',
+    shareNote1: 'リンクにはグループデータの圧縮スナップショットが含まれています。',
+    shareNote2: '受信者は経費と残高を読み取り専用モードで閲覧できます。独自の変更を行うには、新しいグループを作成する必要があります。',
+
+    // Read-only view
+    readOnlyView: '読み取り専用表示',
+    readOnlyMessage: 'このグループの共有スナップショットを表示しています。変更はできません。独自の経費を追跡するには、新しいグループを作成するか、これをアカウントにインポートしてください。',
 
     // Errors
     errorLoadingGroups: 'グループの読み込みに失敗しました',
@@ -413,14 +425,18 @@ export const translations: Record<Language, Translations> = {
     // Share
     shareGroup: '分享群组',
     shareGroupMessage: '与他人分享此群组',
-    shareGroupDescription: '复制此链接以分享群组结构（名称、成员、货币）。接收者将从空费用列表开始。',
+    shareGroupDescription: '分享包含所有费用和余额的群组只读快照。接收者可以查看但无法编辑。',
     copyLink: '复制链接',
     copyShareLink: '复制分享链接',
     linkCopied: '链接已复制！',
     copiedToClipboard: '已复制到剪贴板！',
     howItWorks: '工作原理：',
-    shareNote1: '此应用使用本地存储，因此数据仅保存在您的设备上。',
-    shareNote2: '当其他人打开此链接时，他们将被提示将群组数据导入到自己的设备。其他人所做的更改不会同步回您。',
+    shareNote1: '链接包含您群组数据的压缩快照。',
+    shareNote2: '接收者可以以只读模式查看费用和余额。要进行自己的更改，他们需要创建新群组。',
+
+    // Read-only view
+    readOnlyView: '只读视图',
+    readOnlyMessage: '您正在查看此群组的共享快照。您无法进行更改。要追踪您自己的费用，请创建新群组或将此群组导入到您的账户。',
 
     // Errors
     errorLoadingGroups: '加载群组失败',
