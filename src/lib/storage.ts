@@ -24,6 +24,8 @@ export class StorageService {
         ...group,
         createdAt: new Date(group.createdAt),
         updatedAt: new Date(group.updatedAt),
+        startDate: group.startDate ? new Date(group.startDate) : undefined,
+        endDate: group.endDate ? new Date(group.endDate) : undefined,
         members: group.members.map((m: any) => ({
           ...m,
           createdAt: new Date(m.createdAt),

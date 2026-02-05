@@ -2,6 +2,8 @@
  * Core domain models for the bill-splitting application
  */
 
+import type { ExpenseCategoryId, GroupCategoryId } from '@/lib/constants';
+
 // Person within a group
 export interface Person {
   id: string;
@@ -24,6 +26,7 @@ export interface Expense {
   groupId: string;
   description: string;
   amount: number;
+  category?: ExpenseCategoryId; // Optional category for filtering
   paidBy: string; // Person ID who paid
   splitType: SplitType;
   splits: Split[]; // How the expense is divided
@@ -47,6 +50,9 @@ export interface Group {
   id: string;
   name: string;
   description?: string;
+  category?: GroupCategoryId; // Optional category for organization
+  startDate?: Date; // Optional start date for the group activity
+  endDate?: Date; // Optional end date for the group activity
   currency: string; // Default: 'USD'
   currencySymbol: string; // Default: '$'
   members: Person[];

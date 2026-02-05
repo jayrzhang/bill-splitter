@@ -80,6 +80,32 @@ export interface Translations {
   allSettledMessage: string;
   markSettled: string;
 
+  // Categories
+  category: string;
+  expenseCategory: string;
+  groupCategory: string;
+  startDate: string;
+  endDate: string;
+  startDateOptional: string;
+  endDateOptional: string;
+  endDateMustBeAfterStartDate: string;
+
+  // Expense category names
+  categoryFood: string;
+  categoryAccommodation: string;
+  categoryTransport: string;
+  categoryEntertainment: string;
+  categoryShopping: string;
+  categoryUtilities: string;
+  categoryOther: string;
+
+  // Group category names
+  categoryTravel: string;
+  categoryDinner: string;
+  categoryColleagues: string;
+  categoryRoommates: string;
+  categoryWedding: string;
+
   // Time
   today: string;
   yesterday: string;
@@ -193,6 +219,32 @@ export const translations: Record<Language, Translations> = {
     allSettledMessage: 'Everyone is even. Great job tracking your expenses!',
     markSettled: 'Mark payment as settled?',
 
+    // Categories
+    category: 'Category',
+    expenseCategory: 'Expense Category',
+    groupCategory: 'Group Category',
+    startDate: 'Start Date',
+    endDate: 'End Date',
+    startDateOptional: 'Start Date (Optional)',
+    endDateOptional: 'End Date (Optional)',
+    endDateMustBeAfterStartDate: 'End date must be after start date',
+
+    // Expense category names
+    categoryFood: 'Food',
+    categoryAccommodation: 'Accommodation',
+    categoryTransport: 'Transport',
+    categoryEntertainment: 'Entertainment',
+    categoryShopping: 'Shopping',
+    categoryUtilities: 'Utilities',
+    categoryOther: 'Other',
+
+    // Group category names
+    categoryTravel: 'Travel',
+    categoryDinner: 'Dinner',
+    categoryColleagues: 'Colleagues',
+    categoryRoommates: 'Roommates',
+    categoryWedding: 'Wedding/Event',
+
     // Time
     today: 'Today',
     yesterday: 'Yesterday',
@@ -305,6 +357,32 @@ export const translations: Record<Language, Translations> = {
     allSettledMessage: '全員が均等です。経費の追跡、お疲れ様でした！',
     markSettled: '支払いを精算済みとしてマークしますか？',
 
+    // Categories
+    category: 'カテゴリ',
+    expenseCategory: '経費カテゴリ',
+    groupCategory: 'グループカテゴリ',
+    startDate: '開始日',
+    endDate: '終了日',
+    startDateOptional: '開始日（オプション）',
+    endDateOptional: '終了日（オプション）',
+    endDateMustBeAfterStartDate: '終了日は開始日より後でなければなりません',
+
+    // Expense category names
+    categoryFood: '食事',
+    categoryAccommodation: '宿泊',
+    categoryTransport: '交通',
+    categoryEntertainment: 'エンターテイメント',
+    categoryShopping: '買い物',
+    categoryUtilities: '光熱費',
+    categoryOther: 'その他',
+
+    // Group category names
+    categoryTravel: '旅行',
+    categoryDinner: '食事会',
+    categoryColleagues: '同僚',
+    categoryRoommates: 'ルームメイト',
+    categoryWedding: '結婚式/イベント',
+
     // Time
     today: '今日',
     yesterday: '昨日',
@@ -416,6 +494,32 @@ export const translations: Record<Language, Translations> = {
     allSettled: '全部结清！',
     allSettledMessage: '所有人已结清。很好地追踪了您的费用！',
     markSettled: '标记付款为已结算？',
+
+    // Categories
+    category: '类别',
+    expenseCategory: '费用类别',
+    groupCategory: '群组类别',
+    startDate: '开始日期',
+    endDate: '结束日期',
+    startDateOptional: '开始日期（可选）',
+    endDateOptional: '结束日期（可选）',
+    endDateMustBeAfterStartDate: '结束日期必须晚于开始日期',
+
+    // Expense category names
+    categoryFood: '食物',
+    categoryAccommodation: '住宿',
+    categoryTransport: '交通',
+    categoryEntertainment: '娱乐',
+    categoryShopping: '购物',
+    categoryUtilities: '水电费',
+    categoryOther: '其他',
+
+    // Group category names
+    categoryTravel: '旅行',
+    categoryDinner: '聚餐',
+    categoryColleagues: '同事',
+    categoryRoommates: '室友',
+    categoryWedding: '婚礼/活动',
 
     // Time
     today: '今天',

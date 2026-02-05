@@ -9,6 +9,7 @@ import { listItem, staggerContainer } from '@/styles/animations';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import EditExpenseDialog from './EditExpenseDialog';
 import type { Expense, Group } from '@/types';
+import { EXPENSE_CATEGORIES } from '@/lib/constants';
 
 interface ExpenseListProps {
   groupId: string;
@@ -29,6 +30,11 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
 
   const getPerson = (personId: string) => {
     return group.members.find((m) => m.id === personId);
+  };
+
+  const getCategoryDetails = (categoryId: string | undefined) => {
+    if (!categoryId) return null;
+    return EXPENSE_CATEGORIES.find((cat) => cat.id === categoryId);
   };
 
   const sortedExpenses = [...group.expenses].sort(
@@ -78,9 +84,27 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
 
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold mb-1">{expense.description}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">
-                        Paid by {payer.name} • {formatDate(expense.date)}
-                      </p>
+                      <div className="flex items-center gap-2 mb-2 flex-wrap">
+                        {expense.category && (() => {
+                          const categoryDetails = getCategoryDetails(expense.category);
+                          if (!categoryDetails) return null;
+                          return (
+                            <span
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
+                              style={{
+                                backgroundColor: categoryDetails.color + '20',
+                                color: categoryDetails.color
+                              }}
+                            >
+                              <span>{categoryDetails.icon}</span>
+                              <span>{categoryDetails.name}</span>
+                            </span>
+                          );
+                        })()}
+                        <span className="text-sm text-muted-foreground">
+                          Paid by {payer.name} • {formatDate(expense.date)}
+                        </span>
+                      </div>
 
                       <div className="flex flex-wrap gap-1">
                         {expense.splits.map((split) => {

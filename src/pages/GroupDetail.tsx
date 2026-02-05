@@ -5,7 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import type { Group } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Users, Share2, Pencil, Trash2, Eye } from 'lucide-react';
+import { ArrowLeft, Plus, Users, Share2, Pencil, Trash2, Eye, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { fadeIn } from '@/styles/animations';
 import AddPersonDialog from '@/components/person/AddPersonDialog';
@@ -15,6 +15,7 @@ import ExpenseList from '@/components/expense/ExpenseList';
 import BalanceSummary from '@/components/balance/BalanceSummary';
 import ShareGroupDialog from '@/components/group/ShareGroupDialog';
 import EditGroupDialog from '@/components/group/EditGroupDialog';
+import { format } from 'date-fns';
 
 export default function GroupDetail() {
   const { groupId } = useParams<{ groupId: string }>();
@@ -42,6 +43,8 @@ export default function GroupDetail() {
           // Hydrate dates
           parsedGroup.createdAt = new Date(parsedGroup.createdAt);
           parsedGroup.updatedAt = new Date(parsedGroup.updatedAt);
+          if (parsedGroup.startDate) parsedGroup.startDate = new Date(parsedGroup.startDate);
+          if (parsedGroup.endDate) parsedGroup.endDate = new Date(parsedGroup.endDate);
           parsedGroup.members = parsedGroup.members.map((m: any) => ({
             ...m,
             createdAt: new Date(m.createdAt),
@@ -149,6 +152,16 @@ export default function GroupDetail() {
               </div>
               {group.description && (
                 <p className="text-muted-foreground">{group.description}</p>
+              )}
+              {(group.startDate || group.endDate) && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-2">
+                  <Calendar className="h-4 w-4" />
+                  <span>
+                    {group.startDate && format(group.startDate, 'MMMM d, yyyy')}
+                    {group.startDate && group.endDate && ' - '}
+                    {group.endDate && format(group.endDate, 'MMMM d, yyyy')}
+                  </span>
+                </div>
               )}
             </div>
             {!isReadOnly && (

@@ -3,7 +3,7 @@ import type { Group, Person, Expense, Settlement, GroupSummary } from '@/types';
 import { StorageService } from '@/lib/storage';
 import { generateId } from '@/lib/utils';
 import { calculateBalances, simplifyDebts } from '@/lib/calculations';
-import { PERSON_COLORS, DEFAULT_CURRENCY, CURRENCIES } from '@/lib/constants';
+import { PERSON_COLORS, DEFAULT_CURRENCY, CURRENCIES, type GroupCategoryId } from '@/lib/constants';
 import { decompressFromEncodedURIComponent } from 'lz-string';
 
 interface AppContextType {
@@ -12,7 +12,7 @@ interface AppContextType {
   currentGroupId: string | null;
 
   // Group operations
-  createGroup: (name: string, description?: string, currencyCode?: string) => Group;
+  createGroup: (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date) => Group;
   updateGroup: (id: string, updates: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
   setCurrentGroup: (id: string | null) => void;
@@ -138,12 +138,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [currentGroupId, isInitialized]);
 
   // Group operations
-  const createGroup = (name: string, description?: string, currencyCode?: string): Group => {
+  const createGroup = (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date): Group => {
     const currency = CURRENCIES.find(c => c.code === currencyCode) || DEFAULT_CURRENCY;
     const newGroup: Group = {
       id: generateId(),
       name,
       description,
+      category,
+      startDate,
+      endDate,
       currency: currency.code,
       currencySymbol: currency.symbol,
       members: [],

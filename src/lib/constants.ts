@@ -25,3 +25,28 @@ export const CURRENCIES = [
 ];
 
 export const DEFAULT_CURRENCY = CURRENCIES[0]; // USD
+
+// Expense categories with icons and colors
+export const EXPENSE_CATEGORIES = [
+  { id: 'food', name: 'Food', icon: '🍽️', color: '#10b981' },
+  { id: 'accommodation', name: 'Accommodation', icon: '🏠', color: '#6366f1' },
+  { id: 'transport', name: 'Transport', icon: '🚗', color: '#06b6d4' },
+  { id: 'entertainment', name: 'Entertainment', icon: '🎬', color: '#ec4899' },
+  { id: 'shopping', name: 'Shopping', icon: '🛍️', color: '#8b5cf6' },
+  { id: 'utilities', name: 'Utilities', icon: '⚡', color: '#f59e0b' },
+  { id: 'other', name: 'Other', icon: '📦', color: '#64748b' },
+] as const;
+
+export type ExpenseCategoryId = typeof EXPENSE_CATEGORIES[number]['id'];
+
+// Group categories with icons and colors
+export const GROUP_CATEGORIES = [
+  { id: 'travel', name: 'Travel', icon: '✈️', color: '#06b6d4' },
+  { id: 'dinner', name: 'Dinner', icon: '🍽️', color: '#10b981' },
+  { id: 'colleagues', name: 'Colleagues', icon: '💼', color: '#6366f1' },
+  { id: 'roommates', name: 'Roommates', icon: '🏠', color: '#8b5cf6' },
+  { id: 'wedding', name: 'Wedding/Event', icon: '💒', color: '#ec4899' },
+  { id: 'other', name: 'Other', icon: '👥', color: '#64748b' },
+] as const;
+
+export type GroupCategoryId = typeof GROUP_CATEGORIES[number]['id'];

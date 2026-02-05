@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import {
   Dialog,
   DialogContent,
@@ -12,10 +13,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { Split } from '@/types';
+import type { ExpenseCategoryId } from '@/lib/constants';
+import { EXPENSE_CATEGORIES } from '@/lib/constants';
 import { calculateEqualSplits, validateSplits } from '@/lib/calculations';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency, cn } from '@/lib/utils';
 
 interface AddExpenseDialogProps {
   groupId: string;
@@ -25,14 +28,21 @@ interface AddExpenseDialogProps {
 
 export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExpenseDialogProps) {
   const { groups, addExpense } = useApp();
+  const { t } = useLanguage();
   const group = groups.find((g) => g.id === groupId);
 
   const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<ExpenseCategoryId>('other');
   const [amount, setAmount] = useState('');
   const [paidBy, setPaidBy] = useState('');
   const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [customSplits, setCustomSplits] = useState<Split[]>([]);
+
+  // Category scroll state
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   // Initialize paidBy and selectedMembers when dialog opens
   useEffect(() => {
@@ -55,7 +65,45 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
     }
   }, [amount, selectedMembers, splitType]);
 
+  // Update category scroll buttons
+  useEffect(() => {
+    if (!open) return;
+
+    const updateScrollButtons = () => {
+      if (categoryScrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+        setCanScrollLeft(scrollLeft > 5);
+        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+      }
+    };
+
+    const rafId = requestAnimationFrame(() => {
+      updateScrollButtons();
+    });
+
+    const container = categoryScrollRef.current;
+    if (container) {
+      container.addEventListener('scroll', updateScrollButtons);
+      window.addEventListener('resize', updateScrollButtons);
+      return () => {
+        cancelAnimationFrame(rafId);
+        container.removeEventListener('scroll', updateScrollButtons);
+        window.removeEventListener('resize', updateScrollButtons);
+      };
+    }
+
+    return () => cancelAnimationFrame(rafId);
+  }, [open]);
+
   if (!group) return null;
+
+  const scrollCategoryLeft = () => {
+    categoryScrollRef.current?.scrollBy({ left: -240, behavior: 'smooth' });
+  };
+
+  const scrollCategoryRight = () => {
+    categoryScrollRef.current?.scrollBy({ left: 240, behavior: 'smooth' });
+  };
 
   const getInitials = (name: string) => {
     return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
@@ -115,6 +163,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
       groupId,
       description: description.trim(),
       amount: amountNum,
+      category,
       paidBy,
       splitType,
       splits,
@@ -123,6 +172,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
 
     // Reset form
     setDescription('');
+    setCategory('other');
     setAmount('');
     setSplitType('equal');
     setSelectedMembers(group.members.map((m) => m.id));
@@ -142,8 +192,8 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-6 py-6">
+          <form onSubmit={handleSubmit} className="w-full min-w-0">
           <DialogHeader>
             <DialogTitle>Add Expense</DialogTitle>
             <DialogDescription>
@@ -162,6 +212,65 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
                 onChange={(e) => setDescription(e.target.value)}
                 autoFocus
               />
+            </div>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <Label>{t.category}</Label>
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={!canScrollLeft}
+                  className="h-8 w-8 flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
+                  onClick={scrollCategoryLeft}
+                >
+                  <ChevronLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div
+                    ref={categoryScrollRef}
+                    className="flex flex-nowrap gap-2 overflow-x-scroll [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] py-1 touch-none"
+                    style={{ scrollbarWidth: 'none' }}
+                    onWheel={(e) => e.preventDefault()}
+                    onScroll={() => {
+                      if (categoryScrollRef.current) {
+                        const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+                        setCanScrollLeft(scrollLeft > 5);
+                        setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 5);
+                      }
+                    }}
+                  >
+                    {EXPENSE_CATEGORIES.map((cat) => (
+                      <button
+                        key={cat.id}
+                        type="button"
+                        onClick={() => setCategory(cat.id)}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all min-w-[70px] flex-shrink-0",
+                          category === cat.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <span className="text-xl">{cat.icon}</span>
+                        <span className="text-xs font-medium">{cat.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  disabled={!canScrollRight}
+                  className="h-8 w-8 flex-shrink-0 disabled:opacity-30 disabled:pointer-events-none"
+                  onClick={scrollCategoryRight}
+                >
+                  <ChevronRight className="h-5 w-5" />
+                </Button>
+              </div>
             </div>
 
             {/* Amount */}

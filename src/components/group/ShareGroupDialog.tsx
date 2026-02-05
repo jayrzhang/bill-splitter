@@ -50,7 +50,7 @@ export default function ShareGroupDialog({ group, open, onOpenChange }: ShareGro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl p-6">
         <DialogHeader>
           <DialogTitle>{t.shareGroup}</DialogTitle>
           <DialogDescription>
