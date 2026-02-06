@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -19,6 +20,7 @@ interface ExpenseListProps {
 
 export default function ExpenseList({ groupId, readOnly = false, group: propGroup }: ExpenseListProps) {
   const { groups, deleteExpense } = useApp();
+  const { t } = useLanguage();
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const group = propGroup || groups.find((g) => g.id === groupId);
 
@@ -37,6 +39,19 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
     return EXPENSE_CATEGORIES.find((cat) => cat.id === categoryId);
   };
 
+  const getCategoryName = (categoryId: string) => {
+    const categoryMap: Record<string, string> = {
+      food: t.categoryFood,
+      accommodation: t.categoryAccommodation,
+      transport: t.categoryTransport,
+      entertainment: t.categoryEntertainment,
+      shopping: t.categoryShopping,
+      utilities: t.categoryUtilities,
+      other: t.categoryOther,
+    };
+    return categoryMap[categoryId] || categoryId;
+  };
+
   const sortedExpenses = [...group.expenses].sort(
     (a, b) => b.date.getTime() - a.date.getTime()
   );
@@ -47,9 +62,9 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
         <div className="mx-auto w-16 h-16 rounded-full bg-background flex items-center justify-center mb-4">
           <Receipt className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">No expenses yet</h3>
+        <h3 className="text-lg font-semibold mb-2">{t.noExpensesYet}</h3>
         <p className="text-muted-foreground">
-          Add an expense to start tracking who owes whom
+          {t.noExpensesMessage}
         </p>
       </div>
     );
@@ -70,12 +85,12 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
         return (
           <motion.div key={expense.id} variants={listItem}>
             <Card className="group hover:shadow-md transition-shadow">
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 flex-1">
-                    <Avatar className="h-10 w-10 mt-0.5" style={{ backgroundColor: payer.color }}>
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
+                  <div className="flex items-start gap-2 sm:gap-3 flex-1 w-full sm:w-auto">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 mt-0.5 flex-shrink-0" style={{ backgroundColor: payer.color }}>
                       <AvatarFallback
-                        className="text-white font-medium text-sm"
+                        className="text-white font-medium text-xs sm:text-sm"
                         style={{ backgroundColor: payer.color }}
                       >
                         {getInitials(payer.name)}
@@ -83,7 +98,7 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
                     </Avatar>
 
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold mb-1">{expense.description}</h4>
+                      <h4 className="text-sm sm:text-base font-semibold mb-1 truncate">{expense.description}</h4>
                       <div className="flex items-center gap-2 mb-2 flex-wrap">
                         {expense.category && (() => {
                           const categoryDetails = getCategoryDetails(expense.category);
@@ -97,12 +112,12 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
                               }}
                             >
                               <span>{categoryDetails.icon}</span>
-                              <span>{categoryDetails.name}</span>
+                              <span className="hidden sm:inline">{getCategoryName(categoryDetails.id)}</span>
                             </span>
                           );
                         })()}
-                        <span className="text-sm text-muted-foreground">
-                          Paid by {payer.name} • {formatDate(expense.date)}
+                        <span className="text-xs sm:text-sm text-muted-foreground truncate">
+                          {t.paidByLabel} {payer.name} • {formatDate(expense.date)}
                         </span>
                       </div>
 
@@ -127,18 +142,18 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2">
-                    <div className="text-right">
-                      <div className="text-lg font-bold">
+                  <div className="flex items-center sm:items-start gap-2 w-full sm:w-auto justify-between sm:justify-end">
+                    <div className="text-left sm:text-right order-2 sm:order-1">
+                      <div className="text-base sm:text-lg font-bold whitespace-nowrap">
                         {formatCurrency(expense.amount, group.currencySymbol)}
                       </div>
-                      <div className="text-xs text-muted-foreground capitalize">
-                        {expense.splitType} split
+                      <div className="text-xs text-muted-foreground hidden sm:block">
+                        {expense.splitType === 'equal' ? t.equalSplit : t.customSplit}
                       </div>
                     </div>
 
                     {!readOnly && (
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="flex gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity order-1 sm:order-2">
                         <Button
                           variant="ghost"
                           size="icon"
@@ -154,7 +169,7 @@ export default function ExpenseList({ groupId, readOnly = false, group: propGrou
                           size="icon"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm('Delete this expense?')) {
+                            if (confirm(t.deleteExpense + '?')) {
                               deleteExpense(expense.id);
                             }
                           }}

@@ -104,38 +104,37 @@ export default function Home() {
               return (
                 <motion.div key={group.id} variants={fadeInUp}>
                   <Card
-                    className="group cursor-pointer hover:shadow-md transition-shadow"
+                    className="group cursor-pointer hover:shadow-md transition-shadow overflow-hidden"
                     onClick={() => handleGroupClick(group.id)}
                   >
                     <CardHeader>
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <CardTitle>{group.name}</CardTitle>
                             {group.category && (() => {
                               const categoryDetails = getCategoryDetails(group.category);
                               if (!categoryDetails) return null;
                               return (
                                 <span
-                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
-                                  style={{
-                                    backgroundColor: categoryDetails.color + '20',
-                                    color: categoryDetails.color
-                                  }}
+                                  className="inline-flex items-center justify-center flex-shrink-0 text-lg"
+                                  title={categoryDetails.name}
                                 >
-                                  <span>{categoryDetails.icon}</span>
+                                  {categoryDetails.icon}
                                 </span>
                               );
                             })()}
+                            <div className="flex-1 min-w-0">
+                              <CardTitle className="text-lg sm:text-xl truncate">{group.name}</CardTitle>
+                            </div>
                           </div>
                           {group.description && (
-                            <CardDescription>{group.description}</CardDescription>
+                            <CardDescription className="text-xs sm:text-sm truncate">{group.description}</CardDescription>
                           )}
                         </div>
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity h-8 w-8"
+                          className="opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity h-8 w-8"
                           onClick={(e) => handleDeleteGroup(e, group.id, group.name)}
                         >
                           <Trash2 className="h-4 w-4 text-destructive" />
@@ -144,31 +143,31 @@ export default function Home() {
                     </CardHeader>
                     <CardContent>
                       {(group.startDate || group.endDate) && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
-                          <Calendar className="h-4 w-4" />
-                          <span>
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground mb-3">
+                          <Calendar className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                          <span className="truncate">
                             {group.startDate && format(group.startDate, 'MMM d')}
                             {group.startDate && group.endDate && ' - '}
                             {group.endDate && format(group.endDate, group.startDate ? 'MMM d, yyyy' : 'MMM d, yyyy')}
                           </span>
                         </div>
                       )}
-                      <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Users className="h-4 w-4" />
+                      <div className="flex items-center flex-wrap gap-3 sm:gap-6 text-xs sm:text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Users className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span>{group.members.length} {t.members}</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Receipt className="h-4 w-4" />
+                        <div className="flex items-center gap-1.5 sm:gap-2">
+                          <Receipt className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                           <span>{summary?.expenseCount || 0} {t.expenses}</span>
                         </div>
                         {summary && summary.totalExpenses > 0 && (
-                          <div className="ml-auto font-medium text-foreground">
+                          <div className="ml-auto font-medium text-foreground text-sm sm:text-base">
                             {formatCurrency(summary.totalExpenses, group.currencySymbol)}
                           </div>
                         )}
                       </div>
-                      <div className="mt-2 text-xs text-muted-foreground">
+                      <div className="mt-2 text-xs text-muted-foreground truncate">
                         {t.updated} {formatDate(group.updatedAt)}
                       </div>
                     </CardContent>

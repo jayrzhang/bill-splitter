@@ -73,16 +73,14 @@ export default function GroupDetail() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center max-w-md mx-auto p-6">
-          <h2 className="text-2xl font-bold mb-3">Group Not Found</h2>
+          <h2 className="text-2xl font-bold mb-3">{t.groupNotFound}</h2>
           <p className="text-muted-foreground mb-2">
-            This group doesn't exist in your browser's storage.
+            {t.groupNotFoundMessage}
           </p>
           <p className="text-sm text-muted-foreground mb-6">
-            <strong>Why?</strong> This app uses local storage - data only exists on the device where it was created.
-            If you received a share link, it only contains the group structure (name, members).
-            You'll need to create expenses together.
+            <strong>{t.groupNotFoundWhy}</strong> {t.groupNotFoundExplanation}
           </p>
-          <Button onClick={() => navigate('/')}>Go to Home</Button>
+          <Button onClick={() => navigate('/')}>{t.goToHome}</Button>
         </div>
       </div>
     );
@@ -132,19 +130,19 @@ export default function GroupDetail() {
             className="mb-4"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Groups
+            {t.backToGroups}
           </Button>
 
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <h1 className="text-3xl font-bold tracking-tight">{group.name}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{group.name}</h1>
                 {!isReadOnly && (
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => setIsEditGroupDialogOpen(true)}
-                    className="h-8 w-8"
+                    className="h-8 w-8 flex-shrink-0"
                   >
                     <Pencil className="h-4 w-4" />
                   </Button>
@@ -165,23 +163,24 @@ export default function GroupDetail() {
               )}
             </div>
             {!isReadOnly && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setIsShareDialogOpen(true)}
+                  className="sm:px-3"
                 >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share
+                  <Share2 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t.share}</span>
                 </Button>
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleDeleteGroup}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10 sm:px-3"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
+                  <Trash2 className="h-4 w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">{t.delete}</span>
                 </Button>
               </div>
             )}
@@ -194,7 +193,7 @@ export default function GroupDetail() {
             <div className="flex items-center gap-2">
               <Users className="h-5 w-5 text-muted-foreground" />
               <h2 className="text-lg font-semibold">
-                Members ({group.members.length})
+                {t.membersCount.replace('{count}', group.members.length.toString())}
               </h2>
             </div>
             {!isReadOnly && (
@@ -202,9 +201,10 @@ export default function GroupDetail() {
                 variant="outline"
                 size="sm"
                 onClick={() => setIsAddPersonDialogOpen(true)}
+                className="sm:px-3"
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Add Person
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t.addPerson}</span>
               </Button>
             )}
           </div>
@@ -214,12 +214,12 @@ export default function GroupDetail() {
           ) : (
             <div className="text-center py-8 bg-muted/50 rounded-lg">
               <p className="text-muted-foreground mb-3">
-                No members yet. Add people to start splitting expenses.
+                {t.noMembersYet}
               </p>
               {!isReadOnly && (
                 <Button onClick={() => setIsAddPersonDialogOpen(true)} size="sm">
                   <Plus className="mr-2 h-4 w-4" />
-                  Add First Member
+                  {t.addFirstMember}
                 </Button>
               )}
             </div>
@@ -230,14 +230,17 @@ export default function GroupDetail() {
         <Tabs defaultValue="expenses" className="w-full">
           <div className="flex items-center justify-between mb-4">
             <TabsList>
-              <TabsTrigger value="expenses">Expenses</TabsTrigger>
-              <TabsTrigger value="balances">Balances</TabsTrigger>
+              <TabsTrigger value="expenses">{t.expenses}</TabsTrigger>
+              <TabsTrigger value="balances">{t.balances}</TabsTrigger>
             </TabsList>
 
             {!isReadOnly && canAddExpense && (
-              <Button onClick={() => setIsAddExpenseDialogOpen(true)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Expense
+              <Button
+                onClick={() => setIsAddExpenseDialogOpen(true)}
+                className="sm:px-4"
+              >
+                <Plus className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{t.addExpense}</span>
               </Button>
             )}
           </div>
@@ -248,12 +251,12 @@ export default function GroupDetail() {
             ) : (
               <div className="text-center py-12 bg-muted/50 rounded-lg">
                 <p className="text-muted-foreground mb-3">
-                  Add at least 2 members to start tracking expenses
+                  {t.addAtLeast2Members}
                 </p>
                 {!isReadOnly && (
                   <Button onClick={() => setIsAddPersonDialogOpen(true)} size="sm">
                     <Plus className="mr-2 h-4 w-4" />
-                    Add Members
+                    {t.addMembers}
                   </Button>
                 )}
               </div>
@@ -267,8 +270,8 @@ export default function GroupDetail() {
               <div className="text-center py-12 bg-muted/50 rounded-lg">
                 <p className="text-muted-foreground">
                   {isReadOnly
-                    ? 'No balances to display yet'
-                    : 'Add members and expenses to see balances'
+                    ? t.noBalancesYet
+                    : t.addMembersAndExpenses
                   }
                 </p>
               </div>

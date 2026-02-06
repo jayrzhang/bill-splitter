@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -18,6 +19,7 @@ interface BalanceSummaryProps {
 
 export default function BalanceSummary({ groupId, readOnly = false, group: propGroup }: BalanceSummaryProps) {
   const { getGroupSummary, addSettlement, groups } = useApp();
+  const { t } = useLanguage();
   const group = propGroup || groups.find((g) => g.id === groupId);
   const [settlingDebt, setSettlingDebt] = useState<Debt | null>(null);
 
@@ -65,7 +67,7 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
     <div className="space-y-6">
       {/* Net Balances */}
       <div>
-        <h3 className="text-lg font-semibold mb-4">Net Balances</h3>
+        <h3 className="text-lg font-semibold mb-4">{t.netBalances}</h3>
         <div key={`balances-${balances.length}-${summary.totalExpenses}`} className="grid gap-3 sm:grid-cols-2">
           {/* People who are owed money */}
           {creditors.map((balance) => {
@@ -75,24 +77,24 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
             return (
               <motion.div key={balance.personId} variants={listItem}>
                 <Card className="border-green-200 dark:border-green-900">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10" style={{ backgroundColor: person.color }}>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10" style={{ backgroundColor: person.color }}>
                         <AvatarFallback
-                          className="text-white font-medium"
+                          className="text-white font-medium text-xs sm:text-sm"
                           style={{ backgroundColor: person.color }}
                         >
                           {getInitials(person.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{person.name}</p>
-                        <div className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-                          <TrendingUp className="h-4 w-4" />
-                          <span>Gets back</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{person.name}</p>
+                        <div className="flex items-center gap-1 text-xs sm:text-sm text-green-600 dark:text-green-400">
+                          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span>{t.getsBack}</span>
                         </div>
                       </div>
-                      <div className="text-lg font-bold text-green-600 dark:text-green-400">
+                      <div className="text-base sm:text-lg font-bold text-green-600 dark:text-green-400 whitespace-nowrap">
                         {formatCurrency(balance.netBalance, group.currencySymbol)}
                       </div>
                     </div>
@@ -110,24 +112,24 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
             return (
               <motion.div key={balance.personId} variants={listItem}>
                 <Card className="border-red-200 dark:border-red-900">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10" style={{ backgroundColor: person.color }}>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10" style={{ backgroundColor: person.color }}>
                         <AvatarFallback
-                          className="text-white font-medium"
+                          className="text-white font-medium text-xs sm:text-sm"
                           style={{ backgroundColor: person.color }}
                         >
                           {getInitials(person.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{person.name}</p>
-                        <div className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                          <TrendingDown className="h-4 w-4" />
-                          <span>Owes</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{person.name}</p>
+                        <div className="flex items-center gap-1 text-xs sm:text-sm text-red-600 dark:text-red-400">
+                          <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span>{t.owes}</span>
                         </div>
                       </div>
-                      <div className="text-lg font-bold text-red-600 dark:text-red-400">
+                      <div className="text-base sm:text-lg font-bold text-red-600 dark:text-red-400 whitespace-nowrap">
                         {formatCurrency(Math.abs(balance.netBalance), group.currencySymbol)}
                       </div>
                     </div>
@@ -145,24 +147,24 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
             return (
               <motion.div key={balance.personId} variants={listItem}>
                 <Card>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-10 w-10" style={{ backgroundColor: person.color }}>
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <Avatar className="h-8 w-8 sm:h-10 sm:w-10" style={{ backgroundColor: person.color }}>
                         <AvatarFallback
-                          className="text-white font-medium"
+                          className="text-white font-medium text-xs sm:text-sm"
                           style={{ backgroundColor: person.color }}
                         >
                           {getInitials(person.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <p className="font-medium">{person.name}</p>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Minus className="h-4 w-4" />
-                          <span>Settled up</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm sm:text-base truncate">{person.name}</p>
+                        <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
+                          <Minus className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <span>{t.settledUp}</span>
                         </div>
                       </div>
-                      <div className="text-lg font-bold text-muted-foreground">
+                      <div className="text-base sm:text-lg font-bold text-muted-foreground whitespace-nowrap">
                         {formatCurrency(0, group.currencySymbol)}
                       </div>
                     </div>
@@ -177,7 +179,7 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
       {/* Simplified Debts */}
       {simplifiedDebts.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold mb-4">Suggested Payments</h3>
+          <h3 className="text-lg font-semibold mb-4">{t.suggestedPayments}</h3>
           <motion.div
             key={`debts-${simplifiedDebts.length}-${summary.totalExpenses}`}
             className="space-y-3"
@@ -194,38 +196,47 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
               return (
                 <motion.div key={`${debt.from}-${debt.to}-${index}`} variants={listItem}>
                   <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-3">
-                        {/* From Person */}
-                        <Avatar className="h-10 w-10" style={{ backgroundColor: fromPerson.color }}>
-                          <AvatarFallback
-                            className="text-white font-medium"
-                            style={{ backgroundColor: fromPerson.color }}
-                          >
-                            {getInitials(fromPerson.name)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium">{fromPerson.name}</span>
+                    <CardContent className="p-5">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        {/* Payment info with clear layout */}
+                        <div className="flex items-center gap-4 flex-1 w-full">
+                          {/* From Person - name with avatar */}
+                          <div className="flex items-center gap-2">
+                            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" style={{ backgroundColor: fromPerson.color }}>
+                              <AvatarFallback
+                                className="text-white font-medium text-xs sm:text-sm"
+                                style={{ backgroundColor: fromPerson.color }}
+                              >
+                                {getInitials(fromPerson.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <span className="font-semibold text-sm sm:text-base whitespace-nowrap">{fromPerson.name}</span>
+                          </div>
 
-                        {/* Arrow */}
-                        <div className="flex items-center gap-2 flex-1 justify-center">
-                          <ArrowRight className="h-5 w-5 text-muted-foreground" />
-                          <span className="text-lg font-bold">
-                            {formatCurrency(debt.amount, group.currencySymbol)}
-                          </span>
-                          <ArrowRight className="h-5 w-5 text-muted-foreground" />
+                          {/* Payment amount - centered and prominent */}
+                          <div className="flex-1 text-center">
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-1 sm:gap-2">
+                              <span className="text-muted-foreground text-xs sm:text-sm">{t.shouldPay}</span>
+                              <span className="font-bold text-primary text-lg sm:text-xl whitespace-nowrap">
+                                {formatCurrency(debt.amount, group.currencySymbol)}
+                              </span>
+                              <span className="text-muted-foreground text-xs sm:text-sm">{t.to}</span>
+                            </div>
+                          </div>
+
+                          {/* To Person - name with avatar */}
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-sm sm:text-base whitespace-nowrap">{toPerson.name}</span>
+                            <Avatar className="h-8 w-8 sm:h-10 sm:w-10 flex-shrink-0" style={{ backgroundColor: toPerson.color }}>
+                              <AvatarFallback
+                                className="text-white font-medium text-xs sm:text-sm"
+                                style={{ backgroundColor: toPerson.color }}
+                              >
+                                {getInitials(toPerson.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          </div>
                         </div>
-
-                        {/* To Person */}
-                        <span className="text-sm font-medium">{toPerson.name}</span>
-                        <Avatar className="h-10 w-10" style={{ backgroundColor: toPerson.color }}>
-                          <AvatarFallback
-                            className="text-white font-medium"
-                            style={{ backgroundColor: toPerson.color }}
-                          >
-                            {getInitials(toPerson.name)}
-                          </AvatarFallback>
-                        </Avatar>
 
                         {/* Settle Button */}
                         {!readOnly && (
@@ -233,10 +244,10 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
                             variant="outline"
                             size="sm"
                             onClick={() => handleSettle(debt)}
-                            className="ml-2"
+                            className="flex-shrink-0 w-full sm:w-auto"
                           >
                             <CheckCircle2 className="mr-2 h-4 w-4" />
-                            Settle
+                            {t.settle}
                           </Button>
                         )}
                       </div>
@@ -254,9 +265,9 @@ export default function BalanceSummary({ groupId, readOnly = false, group: propG
         <Card className="border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950/20">
           <CardContent className="p-6 text-center">
             <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto mb-3" />
-            <h3 className="text-lg font-semibold mb-1">All Settled!</h3>
+            <h3 className="text-lg font-semibold mb-1">{t.allSettled}</h3>
             <p className="text-muted-foreground">
-              Everyone is even. Great job tracking your expenses!
+              {t.allSettledMessage}
             </p>
           </CardContent>
         </Card>

@@ -112,6 +112,19 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
     categoryScrollRef.current?.scrollBy({ left: 240, behavior: 'smooth' });
   };
 
+  const getCategoryName = (categoryId: string) => {
+    const categoryMap: Record<string, string> = {
+      food: t.categoryFood,
+      accommodation: t.categoryAccommodation,
+      transport: t.categoryTransport,
+      entertainment: t.categoryEntertainment,
+      shopping: t.categoryShopping,
+      utilities: t.categoryUtilities,
+      other: t.categoryOther,
+    };
+    return categoryMap[categoryId] || categoryId;
+  };
+
   const getInitials = (name: string) => {
     return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -191,22 +204,22 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-6 py-6">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-4 sm:py-6">
         <form onSubmit={handleSubmit} className="w-full min-w-0">
           <DialogHeader>
-            <DialogTitle>Edit Expense</DialogTitle>
+            <DialogTitle>{t.editExpense}</DialogTitle>
             <DialogDescription>
-              Update the details of this expense
+              {t.editExpenseMessage}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="edit-description">Description *</Label>
+              <Label htmlFor="edit-description">{t.expenseDescription} *</Label>
               <Input
                 id="edit-description"
-                placeholder="Dinner at restaurant"
+                placeholder={t.expensePlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 autoFocus
@@ -254,7 +267,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                         )}
                       >
                         <span className="text-xl">{cat.icon}</span>
-                        <span className="text-xs font-medium">{cat.name}</span>
+                        <span className="text-xs font-medium">{getCategoryName(cat.id)}</span>
                       </button>
                     ))}
                   </div>
@@ -274,7 +287,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
 
             {/* Amount */}
             <div className="space-y-2">
-              <Label htmlFor="edit-amount">Amount ({group.currencySymbol}) *</Label>
+              <Label htmlFor="edit-amount">{t.amount} ({group.currencySymbol}) *</Label>
               <Input
                 id="edit-amount"
                 type="number"
@@ -285,13 +298,13 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                 onChange={(e) => setAmount(e.target.value)}
               />
               {amount && parseFloat(amount) <= 0 && (
-                <p className="text-sm text-red-500">Amount must be greater than 0</p>
+                <p className="text-sm text-red-500">{t.amountValidation}</p>
               )}
             </div>
 
             {/* Paid By */}
             <div className="space-y-2">
-              <Label>Paid By *</Label>
+              <Label>{t.paidBy} *</Label>
               <div className="flex flex-wrap gap-2">
                 {group.members.map((member) => (
                   <button
@@ -320,7 +333,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
 
             {/* Split Type */}
             <div className="space-y-2">
-              <Label>Split Type</Label>
+              <Label>{t.splitType}</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -333,7 +346,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                   }}
                   className="flex-1"
                 >
-                  Equal Split
+                  {t.equalSplit}
                 </Button>
                 <Button
                   type="button"
@@ -341,7 +354,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                   onClick={() => setSplitType('custom')}
                   className="flex-1"
                 >
-                  Custom Split
+                  {t.customSplit}
                 </Button>
               </div>
             </div>
@@ -349,7 +362,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
             {/* Split Among - Only for Equal Split */}
             {splitType === 'equal' && (
               <div className="space-y-2">
-                <Label>Split Among</Label>
+                <Label>{t.splitAmong}</Label>
                 <div className="flex flex-wrap gap-2">
                   {group.members.map((member) => {
                     const isInOriginalSplit = expense.splits.some(s => s.personId === member.id);
@@ -377,7 +390,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                         </Avatar>
                         <span className="text-sm font-medium">{member.name}</span>
                         {!isInOriginalSplit && (
-                          <Badge variant="secondary" className="text-xs">New</Badge>
+                          <Badge variant="secondary" className="text-xs">{t.newMember}</Badge>
                         )}
                       </button>
                     );
@@ -390,13 +403,13 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
             {splitType === 'custom' && amountNum > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Custom Amounts</Label>
+                  <Label>{t.customAmounts}</Label>
                   <span
                     className={`text-sm font-medium ${
                       Math.abs(remaining) < 0.01 ? 'text-green-600' : 'text-amber-600'
                     }`}
                   >
-                    Remaining: {formatCurrency(remaining, group.currencySymbol)}
+                    {t.remaining}: {formatCurrency(remaining, group.currencySymbol)}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -419,7 +432,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
                           <div className="flex items-center gap-2 flex-1">
                             <span className="text-sm font-medium">{member.name}</span>
                             {!isInOriginalSplit && (
-                              <Badge variant="secondary" className="text-xs">New</Badge>
+                              <Badge variant="secondary" className="text-xs">{t.newMember}</Badge>
                             )}
                           </div>
                         <div className="flex items-center gap-2">
@@ -459,10 +472,10 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t.cancel}
             </Button>
             <Button type="submit" disabled={!isValid}>
-              Save Changes
+              {t.saveChanges}
             </Button>
           </DialogFooter>
         </form>

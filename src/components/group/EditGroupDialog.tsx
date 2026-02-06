@@ -88,6 +88,18 @@ export default function EditGroupDialog({ group, open, onOpenChange }: EditGroup
     categoryScrollRef.current?.scrollBy({ left: 240, behavior: 'smooth' });
   };
 
+  const getGroupCategoryName = (categoryId: string) => {
+    const categoryMap: Record<string, string> = {
+      travel: t.categoryTravel,
+      dinner: t.categoryDinner,
+      colleagues: t.categoryColleagues,
+      roommates: t.categoryRoommates,
+      wedding: t.categoryWedding,
+      other: t.categoryOther,
+    };
+    return categoryMap[categoryId] || categoryId;
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -111,7 +123,7 @@ export default function EditGroupDialog({ group, open, onOpenChange }: EditGroup
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-6 py-6">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-4 sm:py-6">
         <form onSubmit={handleSubmit} className="w-full min-w-0">
           <DialogHeader>
             <DialogTitle>{t.editGroup}</DialogTitle>
@@ -183,7 +195,7 @@ export default function EditGroupDialog({ group, open, onOpenChange }: EditGroup
                         )}
                       >
                         <span className="text-xl">{cat.icon}</span>
-                        <span className="text-xs font-medium">{cat.name}</span>
+                        <span className="text-xs font-medium">{getGroupCategoryName(cat.id)}</span>
                       </button>
                     ))}
                   </div>
@@ -202,7 +214,7 @@ export default function EditGroupDialog({ group, open, onOpenChange }: EditGroup
             </div>
 
             {/* Date Range */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="space-y-2">
                 <Label htmlFor="edit-start-date">{t.startDateOptional}</Label>
                 <Input

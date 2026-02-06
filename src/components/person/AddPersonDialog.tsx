@@ -35,7 +35,7 @@ export default function AddPersonDialog({ groupId, open, onOpenChange }: AddPers
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="p-6">
+      <DialogContent className="p-4 sm:p-6">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{t.addPerson}</DialogTitle>

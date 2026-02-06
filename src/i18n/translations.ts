@@ -66,7 +66,12 @@ export interface Translations {
   noExpensesMessage: string;
   deleteExpense: string;
   editExpense: string;
+  editExpenseMessage: string;
   split: string;
+  paidByLabel: string;
+  expensePlaceholder: string;
+  newMember: string;
+  membersCount: string;
 
   // Balance
   balances: string;
@@ -75,6 +80,8 @@ export interface Translations {
   owes: string;
   settledUp: string;
   suggestedPayments: string;
+  shouldPay: string;
+  to: string;
   settle: string;
   allSettled: string;
   allSettledMessage: string;
@@ -132,6 +139,13 @@ export interface Translations {
   errorSavingData: string;
   cannotRemovePerson: string;
   cannotRemovePersonMessage: string;
+  groupNotFound: string;
+  groupNotFoundMessage: string;
+  groupNotFoundWhy: string;
+  groupNotFoundExplanation: string;
+  addAtLeast2Members: string;
+  noBalancesYet: string;
+  addMembersAndExpenses: string;
 
   // Auto-adjust
   autoAdjust: string;
@@ -205,7 +219,12 @@ export const translations: Record<Language, Translations> = {
     noExpensesMessage: 'Add an expense to start tracking who owes whom',
     deleteExpense: 'Delete this expense?',
     editExpense: 'Edit Expense',
+    editExpenseMessage: 'Update the details of this expense',
     split: 'split',
+    paidByLabel: 'Paid by',
+    expensePlaceholder: 'Dinner at restaurant',
+    newMember: 'New',
+    membersCount: 'Members ({count})',
 
     // Balance
     balances: 'Balances',
@@ -214,6 +233,8 @@ export const translations: Record<Language, Translations> = {
     owes: 'Owes',
     settledUp: 'Settled up',
     suggestedPayments: 'Suggested Payments',
+    shouldPay: 'should pay',
+    to: 'to',
     settle: 'Settle',
     allSettled: 'All Settled!',
     allSettledMessage: 'Everyone is even. Great job tracking your expenses!',
@@ -271,6 +292,13 @@ export const translations: Record<Language, Translations> = {
     errorSavingData: 'Failed to save data',
     cannotRemovePerson: 'Cannot remove this person',
     cannotRemovePersonMessage: 'This person is involved in existing expenses.',
+    groupNotFound: 'Group Not Found',
+    groupNotFoundMessage: 'This group doesn\'t exist in your browser\'s storage.',
+    groupNotFoundWhy: 'Why?',
+    groupNotFoundExplanation: 'This app uses local storage - data only exists on the device where it was created. If you received a share link, it only contains the group structure (name, members). You\'ll need to create expenses together.',
+    addAtLeast2Members: 'Add at least 2 members to start tracking expenses',
+    noBalancesYet: 'No balances to display yet',
+    addMembersAndExpenses: 'Add members and expenses to see balances',
 
     // Auto-adjust
     autoAdjust: 'Auto-adjust',
@@ -287,7 +315,7 @@ export const translations: Record<Language, Translations> = {
     language: '言語',
 
     // App title
-    appTitle: '割り勘アプリ',
+    appTitle: 'Splitaa',
     appTagline: '友達と経費を分割して清算',
 
     // Home page
@@ -343,7 +371,12 @@ export const translations: Record<Language, Translations> = {
     noExpensesMessage: '経費を追加して誰が誰に借りているかを追跡しましょう',
     deleteExpense: 'この経費を削除しますか？',
     editExpense: '経費を編集',
+    editExpenseMessage: 'この経費の詳細を更新',
     split: '割り勘',
+    paidByLabel: 'が支払った',
+    expensePlaceholder: 'レストランでの夕食',
+    newMember: '新規',
+    membersCount: 'メンバー（{count}人）',
 
     // Balance
     balances: '残高',
@@ -352,6 +385,8 @@ export const translations: Record<Language, Translations> = {
     owes: '支払う',
     settledUp: '精算済み',
     suggestedPayments: '推奨される支払い',
+    shouldPay: 'が支払う',
+    to: 'に',
     settle: '精算',
     allSettled: 'すべて精算完了！',
     allSettledMessage: '全員が均等です。経費の追跡、お疲れ様でした！',
@@ -409,6 +444,13 @@ export const translations: Record<Language, Translations> = {
     errorSavingData: 'データの保存に失敗しました',
     cannotRemovePerson: 'このメンバーを削除できません',
     cannotRemovePersonMessage: 'このメンバーは既存の経費に関与しています。',
+    groupNotFound: 'グループが見つかりません',
+    groupNotFoundMessage: 'このグループはブラウザのストレージに存在しません。',
+    groupNotFoundWhy: '理由',
+    groupNotFoundExplanation: 'このアプリはローカルストレージを使用しています。データは作成されたデバイスにのみ存在します。共有リンクを受け取った場合、グループ構造（名前、メンバー）のみが含まれます。一緒に経費を作成する必要があります。',
+    addAtLeast2Members: '経費の追跡を開始するには、少なくとも2人のメンバーを追加してください',
+    noBalancesYet: '表示する残高がありません',
+    addMembersAndExpenses: 'メンバーと経費を追加して残高を表示',
 
     // Auto-adjust
     autoAdjust: '自動調整',
@@ -425,7 +467,7 @@ export const translations: Record<Language, Translations> = {
     language: '语言',
 
     // App title
-    appTitle: '账单分摊',
+    appTitle: 'Splitaa',
     appTagline: '与朋友分摊费用和结算债务',
 
     // Home page
@@ -481,7 +523,12 @@ export const translations: Record<Language, Translations> = {
     noExpensesMessage: '添加费用以开始追踪谁欠谁钱',
     deleteExpense: '删除此费用？',
     editExpense: '编辑费用',
+    editExpenseMessage: '更新此费用的详细信息',
     split: '分摊',
+    paidByLabel: '由',
+    expensePlaceholder: '餐厅晚餐',
+    newMember: '新',
+    membersCount: '成员（{count}人）',
 
     // Balance
     balances: '余额',
@@ -490,6 +537,8 @@ export const translations: Record<Language, Translations> = {
     owes: '应付',
     settledUp: '已结清',
     suggestedPayments: '建议付款',
+    shouldPay: '应付',
+    to: '给',
     settle: '结算',
     allSettled: '全部结清！',
     allSettledMessage: '所有人已结清。很好地追踪了您的费用！',
@@ -547,6 +596,13 @@ export const translations: Record<Language, Translations> = {
     errorSavingData: '保存数据失败',
     cannotRemovePerson: '无法删除此成员',
     cannotRemovePersonMessage: '此成员参与了现有费用。',
+    groupNotFound: '未找到群组',
+    groupNotFoundMessage: '此群组不存在于您的浏览器存储中。',
+    groupNotFoundWhy: '为什么？',
+    groupNotFoundExplanation: '此应用使用本地存储 - 数据仅存在于创建它的设备上。如果您收到了共享链接，它仅包含群组结构（名称、成员）。您需要一起创建费用。',
+    addAtLeast2Members: '至少添加2个成员以开始追踪费用',
+    noBalancesYet: '暂无余额显示',
+    addMembersAndExpenses: '添加成员和费用以查看余额',
 
     // Auto-adjust
     autoAdjust: '自动调整',

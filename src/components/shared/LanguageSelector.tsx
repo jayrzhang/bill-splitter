@@ -26,7 +26,7 @@ export default function LanguageSelector() {
           <span className="hidden sm:inline">{languageNames[language]}</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-6">
+      <DialogContent className="p-4 sm:p-6">
         <DialogHeader>
           <DialogTitle>{t.language}</DialogTitle>
           <DialogDescription>

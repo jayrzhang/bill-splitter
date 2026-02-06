@@ -105,6 +105,19 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
     categoryScrollRef.current?.scrollBy({ left: 240, behavior: 'smooth' });
   };
 
+  const getCategoryName = (categoryId: string) => {
+    const categoryMap: Record<string, string> = {
+      food: t.categoryFood,
+      accommodation: t.categoryAccommodation,
+      transport: t.categoryTransport,
+      entertainment: t.categoryEntertainment,
+      shopping: t.categoryShopping,
+      utilities: t.categoryUtilities,
+      other: t.categoryOther,
+    };
+    return categoryMap[categoryId] || categoryId;
+  };
+
   const getInitials = (name: string) => {
     return name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2);
   };
@@ -192,22 +205,22 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-6 py-6">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto overflow-x-hidden px-4 sm:px-6 py-4 sm:py-6">
           <form onSubmit={handleSubmit} className="w-full min-w-0">
           <DialogHeader>
-            <DialogTitle>Add Expense</DialogTitle>
+            <DialogTitle>{t.addExpense}</DialogTitle>
             <DialogDescription>
-              Record a new expense for this group
+              {t.addExpenseMessage}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">{t.expenseDescription} *</Label>
               <Input
                 id="description"
-                placeholder="Dinner at restaurant"
+                placeholder={t.expensePlaceholder}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 autoFocus
@@ -255,7 +268,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
                         )}
                       >
                         <span className="text-xl">{cat.icon}</span>
-                        <span className="text-xs font-medium">{cat.name}</span>
+                        <span className="text-xs font-medium">{getCategoryName(cat.id)}</span>
                       </button>
                     ))}
                   </div>
@@ -275,7 +288,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
 
             {/* Amount */}
             <div className="space-y-2">
-              <Label htmlFor="amount">Amount ({group.currencySymbol}) *</Label>
+              <Label htmlFor="amount">{t.amount} ({group.currencySymbol}) *</Label>
               <Input
                 id="amount"
                 type="number"
@@ -286,13 +299,13 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
                 onChange={(e) => setAmount(e.target.value)}
               />
               {amount && parseFloat(amount) <= 0 && (
-                <p className="text-sm text-red-500">Amount must be greater than 0</p>
+                <p className="text-sm text-red-500">{t.amountValidation}</p>
               )}
             </div>
 
             {/* Paid By */}
             <div className="space-y-2">
-              <Label>Paid By *</Label>
+              <Label>{t.paidBy} *</Label>
               <div className="flex flex-wrap gap-2">
                 {group.members.map((member) => (
                   <button
@@ -321,7 +334,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
 
             {/* Split Type */}
             <div className="space-y-2">
-              <Label>Split Type</Label>
+              <Label>{t.splitType}</Label>
               <div className="flex gap-2">
                 <Button
                   type="button"
@@ -329,7 +342,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
                   onClick={() => setSplitType('equal')}
                   className="flex-1"
                 >
-                  Equal Split
+                  {t.equalSplit}
                 </Button>
                 <Button
                   type="button"
@@ -337,7 +350,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
                   onClick={() => setSplitType('custom')}
                   className="flex-1"
                 >
-                  Custom Split
+                  {t.customSplit}
                 </Button>
               </div>
             </div>
@@ -345,7 +358,7 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
             {/* Split Among */}
             {splitType === 'equal' && (
               <div className="space-y-2">
-                <Label>Split Among</Label>
+                <Label>{t.splitAmong}</Label>
                 <div className="flex flex-wrap gap-2">
                   {group.members.map((member) => (
                     <button
@@ -377,13 +390,13 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
             {splitType === 'custom' && amountNum > 0 && (
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label>Custom Amounts</Label>
+                  <Label>{t.customAmounts}</Label>
                   <span
                     className={`text-sm font-medium ${
                       Math.abs(remaining) < 0.01 ? 'text-green-600' : 'text-amber-600'
                     }`}
                   >
-                    Remaining: {formatCurrency(remaining, group.currencySymbol)}
+                    {t.remaining}: {formatCurrency(remaining, group.currencySymbol)}
                   </span>
                 </div>
                 <div className="space-y-2">
@@ -439,10 +452,10 @@ export default function AddExpenseDialog({ groupId, open, onOpenChange }: AddExp
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Cancel
+              {t.cancel}
             </Button>
             <Button type="submit" disabled={!isValid}>
-              Add Expense
+              {t.addExpense}
             </Button>
           </DialogFooter>
         </form>
