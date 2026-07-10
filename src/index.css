@@ -80,3 +80,118 @@
     -moz-osx-font-smoothing: grayscale;
   }
 }
+
+/* ============================================================
+   SplitAA — Liquid Glass design system
+   Ported from the design handoff (SplitAA.dc.html). Scoped to
+   .dc-app so it never collides with the Tailwind/shadcn tokens
+   above. Theme + glass style toggle via classes on the root.
+   ============================================================ */
+.dc-app {
+  --frame-bg: #c9cdd4;
+  --bg: #eef0f4;
+  --surface: #ffffff;
+  --surface-2: #f5f6f9;
+  --surface-3: #eceef2;
+  --text: #0d0f14;
+  --dim: #5f6673;
+  --faint: #98a0ad;
+  --border-c: rgba(12, 16, 26, 0.09);
+  --accent-c: #1fb6ab;
+  --accent-ink: #04322f;
+  --pos: #0e9e8f;
+  --neg: #e0644a;
+  --ambient: radial-gradient(130% 70% at 12% -5%, rgba(31, 182, 171, 0.26), transparent 58%),
+    radial-gradient(120% 60% at 100% 108%, rgba(224, 100, 74, 0.16), transparent 55%),
+    radial-gradient(90% 50% at 90% -10%, rgba(124, 108, 240, 0.14), transparent 60%);
+  --glass-bg: rgba(255, 255, 255, 0.58);
+  --glass-blur: 22px;
+  --glass-sat: 150%;
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-hi: rgba(255, 255, 255, 0.95);
+  --glass-shadow: 0 10px 34px rgba(15, 18, 30, 0.16);
+
+  -webkit-tap-highlight-color: transparent;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.dc-app.theme-dark {
+  --frame-bg: #15171d;
+  --bg: #0a0b0f;
+  --surface: #16181f;
+  --surface-2: #1b1e26;
+  --surface-3: #22262f;
+  --text: #f1f3f6;
+  --dim: #9aa2b0;
+  --faint: #6a7280;
+  --border-c: rgba(255, 255, 255, 0.09);
+  --accent-c: #2ad0c4;
+  --accent-ink: #04211f;
+  --pos: #2ad0c4;
+  --neg: #f0795f;
+  --ambient: radial-gradient(130% 70% at 12% -5%, rgba(31, 182, 171, 0.24), transparent 58%),
+    radial-gradient(120% 60% at 100% 108%, rgba(224, 100, 74, 0.16), transparent 55%),
+    radial-gradient(90% 50% at 90% -10%, rgba(124, 108, 240, 0.16), transparent 60%);
+  --glass-bg: rgba(28, 31, 40, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-hi: rgba(255, 255, 255, 0.16);
+  --glass-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+}
+.dc-app.glass-clear {
+  --glass-bg: rgba(255, 255, 255, 0.28);
+  --glass-blur: 9px;
+  --glass-sat: 185%;
+  --glass-hi: rgba(255, 255, 255, 1);
+}
+.dc-app.theme-dark.glass-clear {
+  --glass-bg: rgba(30, 33, 42, 0.34);
+  --glass-blur: 9px;
+  --glass-hi: rgba(255, 255, 255, 0.22);
+}
+
+.dc-app *,
+.dc-app *::before,
+.dc-app *::after {
+  box-sizing: border-box;
+}
+.dc-app input,
+.dc-app button,
+.dc-app select,
+.dc-app textarea {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  outline: none;
+}
+.dc-app button {
+  cursor: pointer;
+}
+.dc-app input,
+.dc-app select {
+  font-size: 16px;
+}
+.dc-app input::placeholder {
+  color: var(--faint);
+}
+.dc-app ::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+@keyframes dc-scrimIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes dc-sheetIn {
+  from { transform: translateY(24px) scale(0.97); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes dc-fabPop {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes dc-screenIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}

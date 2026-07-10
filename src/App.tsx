@@ -1,19 +1,28 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useParams, useSearchParams } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { LanguageProvider } from './i18n/LanguageContext';
-import Home from './pages/Home';
-import GroupDetail from './pages/GroupDetail';
+import { UIProvider } from './context/UIContext';
+import AppShell from './components/app/AppShell';
+
+function GroupRoute() {
+  const { groupId } = useParams<{ groupId: string }>();
+  const [searchParams] = useSearchParams();
+  const readOnly = searchParams.get('readonly') === 'true';
+  return <AppShell initialGroupId={groupId} readOnly={readOnly} />;
+}
 
 function App() {
   return (
     <BrowserRouter>
       <LanguageProvider>
-        <AppProvider>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/group/:groupId" element={<GroupDetail />} />
-          </Routes>
-        </AppProvider>
+        <UIProvider>
+          <AppProvider>
+            <Routes>
+              <Route path="/" element={<AppShell />} />
+              <Route path="/group/:groupId" element={<GroupRoute />} />
+            </Routes>
+          </AppProvider>
+        </UIProvider>
       </LanguageProvider>
     </BrowserRouter>
   );
