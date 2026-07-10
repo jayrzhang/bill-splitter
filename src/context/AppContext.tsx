@@ -12,7 +12,7 @@ interface AppContextType {
   currentGroupId: string | null;
 
   // Group operations
-  createGroup: (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date) => Group;
+  createGroup: (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date, memberNames?: string[]) => Group;
   updateGroup: (id: string, updates: Partial<Group>) => void;
   deleteGroup: (id: string) => void;
   setCurrentGroup: (id: string | null) => void;
@@ -138,8 +138,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [currentGroupId, isInitialized]);
 
   // Group operations
-  const createGroup = (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date): Group => {
+  const createGroup = (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date, memberNames?: string[]): Group => {
     const currency = CURRENCIES.find(c => c.code === currencyCode) || DEFAULT_CURRENCY;
+    const members: Person[] = (memberNames || [])
+      .map((n) => n.trim())
+      .filter((n) => n.length > 0)
+      .map((n, i) => ({
+        id: generateId(),
+        name: n,
+        color: PERSON_COLORS[i % PERSON_COLORS.length],
+        createdAt: new Date(),
+      }));
     const newGroup: Group = {
       id: generateId(),
       name,
@@ -149,7 +158,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       endDate,
       currency: currency.code,
       currencySymbol: currency.symbol,
-      members: [],
+      members,
       expenses: [],
       settlements: [],
       createdAt: new Date(),
