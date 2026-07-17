@@ -14,7 +14,7 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-react';
-import type { Expense, Split } from '@/types';
+import type { Expense, Split, SplitType } from '@/types';
 import { calculateEqualSplits, validateSplits } from '@/lib/calculations';
 import { formatCurrency, cn } from '@/lib/utils';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -36,7 +36,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategoryId>('other');
   const [paidBy, setPaidBy] = useState('');
-  const [splitType, setSplitType] = useState<'equal' | 'custom' | 'percentage' | 'shares'>('equal');
+  const [splitType, setSplitType] = useState<SplitType>('equal');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [customSplits, setCustomSplits] = useState<Split[]>([]);
 

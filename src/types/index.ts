@@ -13,8 +13,9 @@ export interface Person {
 }
 
 // Split configuration for an expense.
-// 'custom' = exact amounts, 'percentage' = per-person %, 'shares' = per-person weights.
-export type SplitType = 'equal' | 'custom' | 'percentage' | 'shares';
+// 'custom' = exact amounts, 'percentage' = per-person %, 'shares' = per-person weights,
+// 'adjustment' = equal split ± a per-person adjustment.
+export type SplitType = 'equal' | 'custom' | 'percentage' | 'shares' | 'adjustment';
 
 // Recurrence rule attached to an expense that spawns future occurrences.
 // nextDate is an ISO date string (YYYY-MM-DD) so it needs no date hydration.

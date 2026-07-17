@@ -206,6 +206,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     } else if (mode === 'percentage') {
       const base = Math.floor((10000 / ids.length)) / 100; // even %, 2 decimals
       ids.forEach((id, i) => (shares[id] = pctStr(i === 0 ? 100 - base * (ids.length - 1) : base)));
+    } else if (mode === 'adjustment') {
+      ids.forEach((id) => (shares[id] = '0')); // no adjustment = equal split
     } else {
       ids.forEach((id) => (shares[id] = '1')); // equal weights
     }
@@ -221,7 +223,10 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const setDraftShare = (id: string, raw: string) => {
     if (!draft) return;
     const g = groups.find((x) => x.id === draft.groupId);
-    let v = raw.replace(/[^0-9.]/g, '');
+    // adjustment allows a leading minus; all other modes are non-negative numbers
+    let v = draft.splitType === 'adjustment'
+      ? raw.replace(/[^0-9.-]/g, '').replace(/(?!^)-/g, '')
+      : raw.replace(/[^0-9.]/g, '');
     const num = parseFloat(v);
     if (g && !isNaN(num)) {
       if (draft.splitType === 'custom') {
@@ -231,7 +236,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
         const max = Math.max(0, 100 - othersShareSum(id));
         if (num > max) v = pctStr(max);
       }
-      // shares (weights): no clamp
+      // shares (weights) & adjustment: no clamp
     }
     patchDraft({ shares: { ...draft.shares, [id]: v } });
   };
@@ -251,7 +256,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const e = g.expenses.find((x) => x.id === expenseId);
     if (!e) return;
     const shares: Record<string, string> = {};
-    if ((e.splitType === 'percentage' || e.splitType === 'shares') && e.splitValues) {
+    if ((e.splitType === 'percentage' || e.splitType === 'shares' || e.splitType === 'adjustment') && e.splitValues) {
       Object.entries(e.splitValues).forEach(([id, v]) => (shares[id] = String(v)));
     } else {
       e.splits.forEach((s) => (shares[s.personId] = String(s.amount)));
@@ -299,6 +304,12 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splits = ids.map((id, i) => ({ personId: id, amount: Number(((amt * pct[i]) / 100).toFixed(2)) }));
       fixRounding(splits);
       splitValues = Object.fromEntries(ids.map((id, i) => [id, pct[i]]));
+    } else if (draft.splitType === 'adjustment') {
+      const adj = ids.map((id) => parseFloat(draft.shares[id]) || 0);
+      const base = (amt - adj.reduce((a, b) => a + b, 0)) / ids.length;
+      splits = ids.map((id, i) => ({ personId: id, amount: Number((base + adj[i]).toFixed(2)) }));
+      fixRounding(splits);
+      splitValues = Object.fromEntries(ids.map((id, i) => [id, adj[i]]));
     } else {
       const w = ids.map((id) => parseFloat(draft.shares[id]) || 0);
       const sumW = w.reduce((a, b) => a + b, 0);
@@ -956,11 +967,13 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const rawSum = members.reduce((s, m) => s + (parseFloat(draft.shares[m.id]) || 0), 0);
     const remainderAmt = total - rawSum; // custom
     const remainderPct = 100 - rawSum; // percentage
+    const adjBase = members.length ? (total - rawSum) / members.length : 0; // adjustment: equal base after adjustments
     const computedFor = (id: string) => {
       const raw = parseFloat(draft.shares[id]) || 0;
       if (mode === 'equal') return eq;
       if (mode === 'custom') return raw;
       if (mode === 'percentage') return (total * raw) / 100;
+      if (mode === 'adjustment') return adjBase + raw;
       return rawSum > 0 ? (total * raw) / rawSum : 0; // shares
     };
     const amountWidth = `${Math.max(1, (draft.amount || '0').length)}ch`;
@@ -969,6 +982,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       (mode === 'equal' ? true
         : mode === 'custom' ? Math.abs(remainderAmt) < 0.01
         : mode === 'percentage' ? Math.abs(remainderPct) < 0.01
+        : mode === 'adjustment' ? true
         : rawSum > 0);
 
     return (
@@ -1050,10 +1064,10 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
 
                 <div style={{ fontSize: 12, fontWeight: 700, color: V.dim, margin: '20px 2px 8px' }}>{tx.splitBetween}</div>
                 <div style={{ display: 'flex', gap: 4, background: V.surface3, borderRadius: 11, padding: 4, marginBottom: 10 }}>
-                  {(['equal', 'custom', 'percentage', 'shares'] as const).map((k) => {
+                  {(['equal', 'custom', 'percentage', 'shares', 'adjustment'] as const).map((k) => {
                     const active = mode === k;
-                    const lbl = k === 'equal' ? tx.equal : k === 'custom' ? tx.custom : k === 'percentage' ? tx.splitPercent : tx.splitShares;
-                    return <button key={k} onClick={() => setMode(k)} style={{ flex: 1, padding: '7px 4px', borderRadius: 8, textAlign: 'center', background: active ? V.accent : 'transparent', color: active ? V.accentInk : V.dim, fontWeight: active ? 700 : 650, fontSize: 12.5 }}>{lbl}</button>;
+                    const lbl = k === 'equal' ? tx.equal : k === 'custom' ? tx.custom : k === 'percentage' ? tx.splitPercent : k === 'shares' ? tx.splitShares : tx.splitAdjust;
+                    return <button key={k} onClick={() => setMode(k)} style={{ flex: 1, padding: '7px 2px', borderRadius: 8, textAlign: 'center', background: active ? V.accent : 'transparent', color: active ? V.accentInk : V.dim, fontWeight: active ? 700 : 650, fontSize: 11.5 }}>{lbl}</button>;
                   })}
                 </div>
                 <div style={{ ...surfaceCard, borderRadius: 16, overflow: 'hidden' }}>
@@ -1064,7 +1078,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                         <div style={{ width: 32, height: 32, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>{initials(m.name)}</div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</div>
-                          {(mode === 'percentage' || mode === 'shares') && <div style={{ fontSize: 11.5, color: V.faint, marginTop: 1 }}>{fmt(computedFor(m.id), symbol)}</div>}
+                          {(mode === 'percentage' || mode === 'shares' || mode === 'adjustment') && <div style={{ fontSize: 11.5, color: V.faint, marginTop: 1 }}>{fmt(computedFor(m.id), symbol)}</div>}
                         </div>
                         {mode === 'equal' && <div style={{ fontWeight: 700, fontSize: 14, color: V.dim }}>{fmt(eq, symbol)}</div>}
                         {mode !== 'equal' && (
@@ -1075,8 +1089,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                               </button>
                             )}
                             <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 3, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 10, padding: '6px 10px' }}>
-                              {mode === 'custom' && <span style={{ fontSize: 13, color: V.dim }}>{symbol}</span>}
-                              <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode="decimal" aria-label={`${tx.splitBetween} — ${m.name}`} style={{ width: mode === 'custom' ? 60 : 48, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
+                              {(mode === 'custom' || mode === 'adjustment') && <span style={{ fontSize: 13, color: V.dim }}>{symbol}</span>}
+                              <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode={mode === 'adjustment' ? 'text' : 'decimal'} aria-label={`${tx.splitBetween} — ${m.name}`} style={{ width: mode === 'custom' || mode === 'adjustment' ? 60 : 48, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
                               {mode === 'percentage' && <span style={{ fontSize: 13, color: V.dim }}>%</span>}
                               {mode === 'shares' && <span style={{ fontSize: 13, color: V.dim }}>×</span>}
                             </div>
