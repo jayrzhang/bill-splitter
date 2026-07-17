@@ -73,6 +73,9 @@ export interface RedesignStrings {
   editExpense: string;
   descPlaceholder: string;
   notePlaceholder: string;
+  addReceipt: string;
+  a11yViewReceipt: string;
+  a11yRemoveReceipt: string;
   group: string;
   whoPaid: string;
   splitBetween: string;
@@ -197,6 +200,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     editExpense: 'Edit expense',
     descPlaceholder: 'What was it for?',
     notePlaceholder: 'Add a note (optional)',
+    addReceipt: 'Add receipt',
+    a11yViewReceipt: 'View receipt',
+    a11yRemoveReceipt: 'Remove receipt',
     group: 'Group',
     whoPaid: 'Who paid',
     splitBetween: 'Split between',
@@ -312,6 +318,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     editExpense: '支出を編集',
     descPlaceholder: '何の支出？',
     notePlaceholder: 'メモを追加（任意）',
+    addReceipt: 'レシートを追加',
+    a11yViewReceipt: 'レシートを表示',
+    a11yRemoveReceipt: 'レシートを削除',
     group: 'グループ',
     whoPaid: '支払った人',
     splitBetween: '分担',
@@ -427,6 +436,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     editExpense: '编辑支出',
     descPlaceholder: '这笔用于？',
     notePlaceholder: '添加备注（可选）',
+    addReceipt: '添加收据',
+    a11yViewReceipt: '查看收据',
+    a11yRemoveReceipt: '移除收据',
     group: '群组',
     whoPaid: '谁付款',
     splitBetween: '分摊',

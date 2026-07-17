@@ -70,6 +70,11 @@ const PATHS: Record<string, string[]> = {
   ],
   ui_check: ['M20 6 9 17l-5-5'],
   plus: ['M12 5v14', 'M5 12h14'],
+  image: [
+    'M3 5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z',
+    'M8.5 10a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z',
+    'M21 15l-5-5L5 21',
+  ],
 };
 
 // existing expense category ids -> glyph key

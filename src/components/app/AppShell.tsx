@@ -26,6 +26,7 @@ interface Draft {
   splitType: SplitType;
   shares: Record<string, string>; // per-member raw input for the active mode (amount / % / weight), in group currency
   note: string;
+  receipt: string; // compressed JPEG data URL, or '' when none
   repeat: 'none' | 'weekly' | 'monthly';
   currency: string; // the currency the amount is entered in (may differ from the group's)
   fxRate: string; // group-currency units per 1 unit of `currency` (editable)
@@ -77,6 +78,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const [cgMembers, setCgMembers] = useState<LocalMember[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
 
   // open a group deep-linked via the URL exactly once
   const didInit = useRef(false);
@@ -164,6 +166,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splitType: 'equal',
       shares: {},
       note: '',
+      receipt: '',
       repeat: 'none',
       currency: g?.currency || 'USD',
       fxRate: '1',
@@ -177,6 +180,30 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     setTplName('');
   };
   const patchDraft = (p: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...p } : d));
+  // downscale + re-encode a chosen photo to a small JPEG data URL so receipts
+  // don't blow the localStorage quota
+  const onReceiptFile = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0];
+    ev.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 1200;
+        const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+        const w = Math.round(img.width * scale);
+        const h = Math.round(img.height * scale);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d')?.drawImage(img, 0, 0, w, h);
+        patchDraft({ receipt: canvas.toDataURL('image/jpeg', 0.7) });
+      };
+      img.src = String(reader.result || '');
+    };
+    reader.readAsDataURL(file);
+  };
   // the amount to split, in the GROUP currency (entered amount * fx rate)
   const draftTotal = () => {
     if (!draft) return 0;
@@ -302,6 +329,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       id: e.id, groupId: g.id, locked: true,
       amount: String(foreign ? e.originalAmount ?? e.amount : e.amount), desc: e.description,
       category: (e.category as ExpenseCategoryId) || 'other', paidBy: e.paidBy, splitType: e.splitType, shares, note: e.note || '',
+      receipt: e.receipt || '',
       repeat: e.recurrence?.frequency || 'none',
       currency: e.originalCurrency || g.currency,
       fxRate: e.fxRate ? String(e.fxRate) : '1',
@@ -375,6 +403,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       originalAmount: foreign ? origAmt : undefined,
       originalCurrency: foreign ? draft.currency : undefined,
       fxRate: foreign ? rate : undefined,
+      receipt: draft.receipt || undefined,
       note: draft.note.trim() || undefined,
       recurrence,
       date: new Date(),
@@ -667,7 +696,10 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</div>
-                  <div style={{ fontSize: 12, color: V.dim, marginTop: 2 }}>{tx.paidByOn(memberName(g, e.paidBy), dateStr(e.date))}{e.recurrence ? ` · ↻ ${e.recurrence.frequency === 'weekly' ? tx.repeatWeekly : tx.repeatMonthly}` : ''}</div>
+                  <div style={{ fontSize: 12, color: V.dim, marginTop: 2, display: 'flex', alignItems: 'center', gap: 4 }}>
+                    {e.receipt && <Icon name="image" size={12} color={V.faint} />}
+                    <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tx.paidByOn(memberName(g, e.paidBy), dateStr(e.date))}{e.recurrence ? ` · ↻ ${e.recurrence.frequency === 'weekly' ? tx.repeatWeekly : tx.repeatMonthly}` : ''}</span>
+                  </div>
                   {e.note && <div style={{ fontSize: 12, color: V.faint, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.note}</div>}
                 </div>
                 <div style={{ textAlign: 'right', flex: 'none' }}>
@@ -1057,6 +1089,22 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
             <input value={draft.desc} onChange={(e) => patchDraft({ desc: e.target.value })} placeholder={tx.descPlaceholder} aria-label={tx.descPlaceholder} style={{ width: '100%', textAlign: 'center', fontSize: 16, fontWeight: 600, padding: 10, color: V.text }} />
 
             <textarea value={draft.note} onChange={(e) => patchDraft({ note: e.target.value })} placeholder={tx.notePlaceholder} aria-label={tx.notePlaceholder} rows={2} style={{ width: '100%', marginTop: 6, resize: 'none', ...surfaceCard, borderRadius: 12, padding: '10px 12px', fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: V.text }} />
+
+            <input ref={receiptInputRef} type="file" accept="image/*" onChange={onReceiptFile} style={{ display: 'none' }} />
+            <div style={{ marginTop: 8 }}>
+              {draft.receipt ? (
+                <div style={{ position: 'relative', width: 'fit-content' }}>
+                  <a href={draft.receipt} target="_blank" rel="noreferrer" aria-label={tx.a11yViewReceipt}>
+                    <img src={draft.receipt} alt="" style={{ maxHeight: 120, maxWidth: '100%', borderRadius: 12, border: `1px solid ${V.border}`, display: 'block' }} />
+                  </a>
+                  <button onClick={() => patchDraft({ receipt: '' })} aria-label={tx.a11yRemoveReceipt} style={{ position: 'absolute', top: -8, right: -8, width: 24, height: 24, borderRadius: 999, background: V.neg, color: '#fff', fontSize: 15, lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: V.glassShadow }}><span aria-hidden="true">×</span></button>
+                </div>
+              ) : (
+                <button onClick={() => receiptInputRef.current?.click()} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '9px 14px', borderRadius: 12, background: V.surface2, border: `1px solid ${V.border}`, fontSize: 13, fontWeight: 700, color: V.text }}>
+                  <Icon name="image" size={16} color={V.dim} />{tx.addReceipt}
+                </button>
+              )}
+            </div>
 
             {!draft.locked && (
               <>

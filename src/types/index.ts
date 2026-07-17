@@ -47,6 +47,7 @@ export interface Expense {
   originalAmount?: number;
   originalCurrency?: string;
   fxRate?: number; // group-currency units per 1 unit of originalCurrency
+  receipt?: string; // Optional receipt photo, stored locally as a compressed JPEG data URL
   note?: string; // Optional free-text note / details
   recurrence?: Recurrence; // If set, this expense repeats and seeds future occurrences
   date: Date;
