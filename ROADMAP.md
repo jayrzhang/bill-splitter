@@ -55,8 +55,9 @@ The foundation is already live and is the thing every later phase builds on.
 ## Phase 1 — Foundations & Polish
 *Theme: make the account-free, local-first promise bulletproof and installable.*
 
-- [ ] **Installable PWA + full offline.** Service worker, app manifest, "Add to Home
-  Screen," works in airplane mode. → *Competitors gate real offline behind native apps + login.*
+- [x] **Installable PWA + full offline.** Service worker (Workbox precache + SPA
+  navigate-fallback), web manifest, maskable icons, "Add to Home Screen," works in
+  airplane mode. → *Competitors gate real offline behind native apps + login.*
 - [ ] **Editable share links, not just read-only.** Add an explicit "collaborative link"
   mode as the on-ramp to real sync (Phase 2).
 - [x] **Data ownership tools.** One-tap **export/import** (JSON + CSV), full local backup,
