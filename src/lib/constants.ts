@@ -26,6 +26,22 @@ export const CURRENCIES = [
 
 export const DEFAULT_CURRENCY = CURRENCIES[0]; // USD
 
+// Approximate value of 1 unit of each currency in USD. Used only to *suggest* a
+// starting FX rate when entering a foreign-currency expense — the rate is then
+// editable and stored per-expense, so no live/historical rate service is needed.
+export const USD_PER_UNIT: Record<string, number> = {
+  USD: 1, EUR: 1.08, GBP: 1.27, JPY: 0.0067, CAD: 0.73, AUD: 0.66, CHF: 1.12, CNY: 0.14, INR: 0.012,
+};
+
+/** Suggested rate to convert 1 unit of `from` into `to` (group) currency. */
+export function suggestRate(from: string, to: string): number {
+  const f = USD_PER_UNIT[from] ?? 1;
+  const t = USD_PER_UNIT[to] ?? 1;
+  const r = f / t;
+  // trim to a sensible precision for the prefilled input
+  return Number(r.toPrecision(6));
+}
+
 // Expense categories with icons and colors
 export const EXPENSE_CATEGORIES = [
   { id: 'food', name: 'Food', icon: '🍽️', color: '#10b981' },

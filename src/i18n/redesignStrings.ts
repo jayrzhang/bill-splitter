@@ -89,6 +89,8 @@ export interface RedesignStrings {
   repeatNone: string;
   repeatWeekly: string;
   repeatMonthly: string;
+  exchangeRate: string;
+  a11yCurrency: string;
 
   // settings
   appearance: string;
@@ -206,6 +208,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatNone: 'None',
     repeatWeekly: 'Weekly',
     repeatMonthly: 'Monthly',
+    exchangeRate: 'Exchange rate',
+    a11yCurrency: 'Expense currency',
     appearance: 'Appearance',
     light: 'Light',
     dark: 'Dark',
@@ -314,6 +318,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatNone: 'なし',
     repeatWeekly: '毎週',
     repeatMonthly: '毎月',
+    exchangeRate: '為替レート',
+    a11yCurrency: '支出の通貨',
     appearance: '外観',
     light: 'ライト',
     dark: 'ダーク',
@@ -422,6 +428,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatNone: '不重复',
     repeatWeekly: '每周',
     repeatMonthly: '每月',
+    exchangeRate: '汇率',
+    a11yCurrency: '支出货币',
     appearance: '外观',
     light: '浅色',
     dark: '深色',

@@ -67,8 +67,10 @@ The foundation is already live and is the thing every later phase builds on.
 - [x] **Recurring expenses** (rent, subscriptions). *Weekly/monthly rule on an expense; due occurrences are materialized client-side on app load (no server needed).*
 - [x] **Split by percentage & shares** (weights) — clamped inputs, live amount preview, raw values preserved for editing.
 - [ ] **Adjustment splits + reusable split templates.**
-- [ ] **Multi-currency done right:** per-expense currency + **FX rate captured at the
-  expense's date**, so historical trips reconcile correctly instead of using today's rate.
+- [x] **Multi-currency done right:** per-expense currency + an **editable FX rate stored
+  on the expense** (suggested from a bundled table), converted into the group currency at
+  entry — so historical trips reconcile correctly and never shift with later rates. No
+  live/historical rate service needed (fits offline/local-first).
 - [x] **Accessibility pass:** keyboard focus rings, screen-reader labels on icon-only
   controls + inputs, reduced-motion mode, dialog roles + Escape-to-close, heading/landmark
   semantics. *(Remaining polish: full AA-contrast audit + dynamic-type sweep.)*

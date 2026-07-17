@@ -4,7 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useUI } from '@/context/UIContext';
 import { redesignStrings } from '@/i18n/redesignStrings';
 import { calculateBalances, simplifyDebts, calculateEqualSplits, validateSplits } from '@/lib/calculations';
-import { CURRENCIES, EXPENSE_CATEGORIES, GROUP_CATEGORIES, PERSON_COLORS } from '@/lib/constants';
+import { CURRENCIES, EXPENSE_CATEGORIES, GROUP_CATEGORIES, PERSON_COLORS, suggestRate } from '@/lib/constants';
 import type { ExpenseCategoryId, GroupCategoryId } from '@/lib/constants';
 import type { Group, Split, Recurrence, SplitType } from '@/types';
 import { compressToEncodedURIComponent } from 'lz-string';
@@ -24,9 +24,11 @@ interface Draft {
   category: ExpenseCategoryId;
   paidBy: string;
   splitType: SplitType;
-  shares: Record<string, string>; // per-member raw input for the active mode (amount / % / weight)
+  shares: Record<string, string>; // per-member raw input for the active mode (amount / % / weight), in group currency
   note: string;
   repeat: 'none' | 'weekly' | 'monthly';
+  currency: string; // the currency the amount is entered in (may differ from the group's)
+  fxRate: string; // group-currency units per 1 unit of `currency` (editable)
 }
 
 interface ConfirmCfg {
@@ -161,6 +163,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       shares: {},
       note: '',
       repeat: 'none',
+      currency: g?.currency || 'USD',
+      fxRate: '1',
     });
     setAddOpen(true);
   };
@@ -169,6 +173,18 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     setDraft(null);
   };
   const patchDraft = (p: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...p } : d));
+  // the amount to split, in the GROUP currency (entered amount * fx rate)
+  const draftTotal = () => {
+    if (!draft) return 0;
+    return (parseFloat(draft.amount) || 0) * (parseFloat(draft.fxRate) || 1);
+  };
+  // pick the expense's entry currency and prefill a suggested rate to the group currency
+  const setDraftCurrency = (code: string) => {
+    if (!draft) return;
+    const g = groups.find((x) => x.id === draft.groupId);
+    const groupCur = g?.currency || 'USD';
+    patchDraft({ currency: code, fxRate: code === groupCur ? '1' : String(suggestRate(code, groupCur)) });
+  };
   // clean numeric string for a share (JPY/CNY have no decimals for amount modes)
   const shareNumStr = (val: number, symbol: string) => (symbol === '¥' ? String(Math.round(val)) : String(Number(val.toFixed(2))));
   const pctStr = (val: number) => String(Number(val.toFixed(2)));
@@ -181,7 +197,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       return;
     }
     const ids = g.members.map((m) => m.id);
-    const total = parseFloat(draft.amount) || 0;
+    const total = draftTotal();
     const shares: Record<string, string> = {};
     if (mode === 'custom') {
       (total > 0 ? calculateEqualSplits(total, ids) : ids.map((id) => ({ personId: id, amount: 0 }))).forEach((s) => {
@@ -209,7 +225,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const num = parseFloat(v);
     if (g && !isNaN(num)) {
       if (draft.splitType === 'custom') {
-        const max = Math.max(0, (parseFloat(draft.amount) || 0) - othersShareSum(id));
+        const max = Math.max(0, draftTotal() - othersShareSum(id));
         if (num > max) v = shareNumStr(max, g.currencySymbol);
       } else if (draft.splitType === 'percentage') {
         const max = Math.max(0, 100 - othersShareSum(id));
@@ -227,7 +243,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     if (draft.splitType === 'percentage') {
       patchDraft({ shares: { ...draft.shares, [id]: pctStr(Math.max(0, 100 - othersShareSum(id))) } });
     } else {
-      const total = parseFloat(draft.amount) || 0;
+      const total = draftTotal();
       patchDraft({ shares: { ...draft.shares, [id]: shareNumStr(Math.max(0, total - othersShareSum(id)), g.currencySymbol) } });
     }
   };
@@ -241,10 +257,14 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       e.splits.forEach((s) => (shares[s.personId] = String(s.amount)));
     }
     setCurrentGroup(g.id);
+    const foreign = !!e.originalCurrency && e.originalCurrency !== g.currency;
     setDraft({
-      id: e.id, groupId: g.id, locked: true, amount: String(e.amount), desc: e.description,
+      id: e.id, groupId: g.id, locked: true,
+      amount: String(foreign ? e.originalAmount ?? e.amount : e.amount), desc: e.description,
       category: (e.category as ExpenseCategoryId) || 'other', paidBy: e.paidBy, splitType: e.splitType, shares, note: e.note || '',
       repeat: e.recurrence?.frequency || 'none',
+      currency: e.originalCurrency || g.currency,
+      fxRate: e.fxRate ? String(e.fxRate) : '1',
     });
     setAddOpen(true);
   };
@@ -252,8 +272,13 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     if (!draft) return;
     const g = groups.find((x) => x.id === draft.groupId);
     if (!g || g.members.length < 2) return;
-    const amt = parseFloat(draft.amount);
-    if (!amt || amt <= 0) return;
+    const origAmt = parseFloat(draft.amount);
+    if (!origAmt || origAmt <= 0) return;
+    const foreign = draft.currency !== g.currency;
+    const rate = foreign ? parseFloat(draft.fxRate) || 0 : 1;
+    if (foreign && rate <= 0) return;
+    const amt = Number((origAmt * rate).toFixed(2)); // group-currency amount used for splits/balances
+    if (amt <= 0) return;
     const ids = g.members.map((m) => m.id);
     // resolve final split amounts (+ raw values for percentage/shares so edit reopens)
     const fixRounding = (arr: Split[]) => {
@@ -301,6 +326,9 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splitType: draft.splitType,
       splits,
       splitValues,
+      originalAmount: foreign ? origAmt : undefined,
+      originalCurrency: foreign ? draft.currency : undefined,
+      fxRate: foreign ? rate : undefined,
       note: draft.note.trim() || undefined,
       recurrence,
       date: new Date(),
@@ -598,6 +626,9 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                 </div>
                 <div style={{ textAlign: 'right', flex: 'none' }}>
                   <div style={{ fontWeight: 750, letterSpacing: '-.01em' }}>{fmt(e.amount, g.currencySymbol)}</div>
+                  {e.originalCurrency && e.originalCurrency !== g.currency && (
+                    <div style={{ fontSize: 11, color: V.faint, marginTop: 2 }}>{fmt(e.originalAmount ?? 0, symbolOf(e.originalCurrency))}</div>
+                  )}
                 </div>
                 {!ro && <span style={{ flex: 'none', color: V.faint, fontSize: 18, marginLeft: -2 }}>›</span>}
               </button>
@@ -914,9 +945,11 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   function expenseSheet() {
     if (!draft) return null;
     const g = groups.find((x) => x.id === draft.groupId);
-    const symbol = g ? g.currencySymbol : '$';
+    const symbol = g ? g.currencySymbol : '$'; // group currency (splits/balances)
+    const entrySymbol = symbolOf(draft.currency); // currency the amount is typed in
+    const foreign = !!g && draft.currency !== g.currency;
     const eligible = g && g.members.length >= 2;
-    const total = parseFloat(draft.amount) || 0;
+    const total = draftTotal(); // entered amount converted to group currency
     const members = g ? g.members : [];
     const eq = members.length ? total / members.length : 0;
     const mode = draft.splitType;
@@ -952,10 +985,25 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
           </div>
           <div style={{ flex: 1, overflowY: 'auto', padding: '8px 20px 26px' }}>
             <div style={{ textAlign: 'center', padding: '18px 0 8px' }}>
+              <div>
+                <select value={draft.currency} onChange={(e) => setDraftCurrency(e.target.value)} aria-label={tx.a11yCurrency} style={{ appearance: 'none', WebkitAppearance: 'none', background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 999, padding: '5px 14px', fontSize: 12.5, fontWeight: 700, color: V.text, marginBottom: 8, textAlign: 'center' }}>
+                  {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.code} · {c.symbol}</option>)}
+                </select>
+              </div>
               <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
-                <span style={{ fontSize: 30, fontWeight: 600, color: V.dim }}>{symbol}</span>
+                <span style={{ fontSize: 30, fontWeight: 600, color: V.dim }}>{entrySymbol}</span>
                 <input value={draft.amount} onChange={(e) => patchDraft({ amount: e.target.value.replace(/[^0-9.]/g, '') })} inputMode="decimal" placeholder="0" aria-label={tx.addExpense} style={{ fontSize: 52, fontWeight: 800, letterSpacing: '-.04em', width: amountWidth, maxWidth: 230, textAlign: 'center' }} />
               </div>
+              {foreign && (
+                <div style={{ marginTop: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexWrap: 'wrap', gap: 8, fontSize: 13 }}>
+                  <span style={{ color: V.dim, fontWeight: 600 }}>{tx.exchangeRate}</span>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 10, padding: '5px 10px' }}>
+                    <input value={draft.fxRate} onChange={(e) => patchDraft({ fxRate: e.target.value.replace(/[^0-9.]/g, '') })} inputMode="decimal" aria-label={tx.exchangeRate} style={{ width: 72, textAlign: 'right', fontWeight: 700, fontSize: 13 }} />
+                  </div>
+                  <span style={{ color: V.faint }}>→</span>
+                  <span style={{ fontWeight: 750 }}>{fmt(total, symbol)}</span>
+                </div>
+              )}
             </div>
             <input value={draft.desc} onChange={(e) => patchDraft({ desc: e.target.value })} placeholder={tx.descPlaceholder} aria-label={tx.descPlaceholder} style={{ width: '100%', textAlign: 'center', fontSize: 16, fontWeight: 600, padding: 10, color: V.text }} />
 
@@ -966,7 +1014,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                 <div style={{ fontSize: 12, fontWeight: 700, color: V.dim, margin: '18px 2px 8px' }}>{tx.group}</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   {groups.filter((x) => x.members.length >= 2).map((x) => (
-                    <button key={x.id} onClick={() => patchDraft({ groupId: x.id, paidBy: x.members[0]?.id || '', shares: {} })} style={chipStyle(x.id === draft.groupId)}>{x.name}</button>
+                    <button key={x.id} onClick={() => patchDraft({ groupId: x.id, paidBy: x.members[0]?.id || '', shares: {}, currency: x.currency, fxRate: '1' })} style={chipStyle(x.id === draft.groupId)}>{x.name}</button>
                   ))}
                 </div>
               </>

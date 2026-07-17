@@ -38,8 +38,14 @@ export interface Expense {
   category?: ExpenseCategoryId; // Optional category for filtering
   paidBy: string; // Person ID who paid
   splitType: SplitType;
-  splits: Split[]; // How the expense is divided (always the final resolved amounts)
+  splits: Split[]; // How the expense is divided (always the final resolved amounts, in the group currency)
   splitValues?: Record<string, number>; // Raw per-person input for percentage/shares modes (so edit reopens correctly)
+  // Multi-currency: when an expense was entered in a currency other than the group's,
+  // we keep the original entry + the FX rate used at that moment. `amount` above stays
+  // in the group currency (original * fxRate) so balances never shift with later rates.
+  originalAmount?: number;
+  originalCurrency?: string;
+  fxRate?: number; // group-currency units per 1 unit of originalCurrency
   note?: string; // Optional free-text note / details
   recurrence?: Recurrence; // If set, this expense repeats and seeds future occurrences
   date: Date;
