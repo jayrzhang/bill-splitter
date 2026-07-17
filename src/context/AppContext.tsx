@@ -31,6 +31,10 @@ interface AppContextType {
 
   // Settlement operations
   addSettlement: (settlement: Omit<Settlement, 'id' | 'settledAt'>) => Settlement;
+
+  // Data ownership
+  exportAllData: () => string;
+  importAllData: (json: string) => { ok: boolean; count: number; error?: string };
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -339,6 +343,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return newSettlement;
   };
 
+  // Data ownership: full local backup export / import (merge by group id)
+  const exportAllData = (): string =>
+    JSON.stringify({ app: 'SplitAA', version: '1.0.0', exportedAt: new Date().toISOString(), groups }, null, 2);
+
+  const importAllData = (json: string): { ok: boolean; count: number; error?: string } => {
+    try {
+      const data = JSON.parse(json);
+      const incoming: any[] = Array.isArray(data) ? data : data?.groups;
+      if (!Array.isArray(incoming)) return { ok: false, count: 0, error: 'No groups found in file' };
+      const hydrated: Group[] = incoming.map((g: any) => ({
+        ...g,
+        createdAt: new Date(g.createdAt),
+        updatedAt: new Date(g.updatedAt),
+        startDate: g.startDate ? new Date(g.startDate) : undefined,
+        endDate: g.endDate ? new Date(g.endDate) : undefined,
+        members: (g.members || []).map((m: any) => ({ ...m, createdAt: new Date(m.createdAt) })),
+        expenses: (g.expenses || []).map((e: any) => ({ ...e, date: new Date(e.date), createdAt: new Date(e.createdAt) })),
+        settlements: (g.settlements || []).map((s: any) => ({ ...s, settledAt: new Date(s.settledAt) })),
+      }));
+      setGroups((prev) => {
+        const map = new Map(prev.map((g) => [g.id, g]));
+        hydrated.forEach((g) => map.set(g.id, g)); // imported groups win on id collision
+        return Array.from(map.values());
+      });
+      return { ok: true, count: hydrated.length };
+    } catch (e) {
+      return { ok: false, count: 0, error: e instanceof Error ? e.message : 'Could not read file' };
+    }
+  };
+
   const value: AppContextType = {
     groups,
     currentGroupId,
@@ -355,6 +389,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateExpense,
     deleteExpense,
     addSettlement,
+    exportAllData,
+    importAllData,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

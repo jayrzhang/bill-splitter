@@ -69,6 +69,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const [cgCur, setCgCur] = useState('USD');
   const [cgMembers, setCgMembers] = useState<LocalMember[]>([]);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // open a group deep-linked via the URL exactly once
   const didInit = useRef(false);
   useEffect(() => {
@@ -331,6 +333,51 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     navigator.clipboard?.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 1600);
+  };
+
+  // ---------- data ownership (export / import) ----------
+  const download = (filename: string, text: string, mime = 'application/json') => {
+    const url = URL.createObjectURL(new Blob([text], { type: mime }));
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+  const stamp = () => new Date().toISOString().slice(0, 10);
+  const noticeOk = (title: string, message: string, danger?: boolean) =>
+    askConfirm({ title, message, confirmLabel: tx.ok, showCancel: false, danger });
+  const exportBackup = () => {
+    if (groups.length === 0) return noticeOk(tx.data, tx.nothingToExport);
+    download(`splitaa-backup-${stamp()}.json`, app.exportAllData());
+  };
+  const csvCell = (v: unknown) => {
+    const s = String(v ?? '');
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const exportCsv = () => {
+    if (groups.every((g) => g.expenses.length === 0)) return noticeOk(tx.data, tx.nothingToExport);
+    const rows: unknown[][] = [['Group', 'Date', 'Description', 'Category', 'Amount', 'Currency', 'Paid by', 'Split']];
+    groups.forEach((g) =>
+      g.expenses.forEach((e) =>
+        rows.push([g.name, new Date(e.date).toISOString().slice(0, 10), e.description, e.category || '', e.amount, g.currency, memberName(g, e.paidBy), e.splitType])
+      )
+    );
+    download(`splitaa-expenses-${stamp()}.csv`, rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv');
+  };
+  const onImportFile = (ev: React.ChangeEvent<HTMLInputElement>) => {
+    const file = ev.target.files?.[0];
+    ev.target.value = '';
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const res = app.importAllData(String(reader.result || ''));
+      if (res.ok) noticeOk(tx.importedTitle, tx.importedMsg(res.count));
+      else noticeOk(tx.importFailedTitle, res.error || '', true);
+    };
+    reader.readAsText(file);
   };
 
   // ============================================================
@@ -642,6 +689,17 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
           </div>
           <div style={{ fontSize: 12.5, color: V.faint, margin: '8px 4px 0', lineHeight: 1.5 }}>{glass === 'frost' ? tx.glassDescFrost : tx.glassDescClear}</div>
         </div>
+        <div>
+          <div style={secTitle}>{tx.data}</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {([[tx.exportBackup, '↓', exportBackup], [tx.exportCsv, '↓', exportCsv], [tx.importBackup, '↑', () => fileInputRef.current?.click()]] as const).map(([lbl, glyph, fn], i) => (
+              <button key={i} onClick={fn} style={{ textAlign: 'left', ...surfaceCard, borderRadius: 14, padding: '14px 16px', fontWeight: 650, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span>{lbl}</span><span style={{ color: V.faint, fontSize: 17 }}>{glyph}</span>
+              </button>
+            ))}
+          </div>
+          <div style={{ fontSize: 12.5, color: V.faint, margin: '8px 4px 0', lineHeight: 1.5 }}>{tx.dataPrivacyNote}</div>
+        </div>
         <button onClick={ui.replayOnboarding} style={{ textAlign: 'left', ...surfaceCard, borderRadius: 16, padding: '15px 16px', fontWeight: 650, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>{tx.replayOnboarding}</span><span style={{ color: V.faint }}>›</span>
         </button>
@@ -766,6 +824,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
           );
         })}
       </div>
+
+      <input ref={fileInputRef} type="file" accept="application/json,.json" onChange={onImportFile} style={{ display: 'none' }} />
 
       {addOpen && draft && expenseSheet()}
       {groupMenuOpen && groupMenu()}

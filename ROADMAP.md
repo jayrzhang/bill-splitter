@@ -59,7 +59,7 @@ The foundation is already live and is the thing every later phase builds on.
   Screen," works in airplane mode. → *Competitors gate real offline behind native apps + login.*
 - [ ] **Editable share links, not just read-only.** Add an explicit "collaborative link"
   mode as the on-ramp to real sync (Phase 2).
-- [ ] **Data ownership tools.** One-tap **export/import** (JSON + CSV), full local backup,
+- [x] **Data ownership tools.** One-tap **export/import** (JSON + CSV), full local backup,
   and a visible "your data never leaves this device unless you share it" statement.
 - [ ] **Receipts / photos** attached to expenses (stored locally).
 - [ ] **Notes & comments** on expenses.

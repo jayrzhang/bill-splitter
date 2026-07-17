@@ -95,6 +95,17 @@ export interface RedesignStrings {
   language: string;
   replayOnboarding: string;
 
+  // data ownership
+  data: string;
+  exportBackup: string;
+  exportCsv: string;
+  importBackup: string;
+  dataPrivacyNote: string;
+  importedTitle: string;
+  importedMsg: (n: number) => string;
+  importFailedTitle: string;
+  nothingToExport: string;
+
   // confirm dialogs
   ok: string;
   remove: string;
@@ -181,6 +192,15 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: 'Thin, highly translucent glass with crisp specular edges. More liquid, more depth.',
     language: 'Language',
     replayOnboarding: 'Replay onboarding',
+    data: 'Data',
+    exportBackup: 'Export backup (JSON)',
+    exportCsv: 'Export expenses (CSV)',
+    importBackup: 'Import backup',
+    dataPrivacyNote: 'Your data lives only on this device. Back it up or move it to another device — nothing is uploaded.',
+    importedTitle: 'Backup imported',
+    importedMsg: (n) => `${n} ${n === 1 ? 'group' : 'groups'} imported. Existing groups with the same id were updated.`,
+    importFailedTitle: 'Import failed',
+    nothingToExport: 'No groups to export yet.',
     ok: 'OK',
     remove: 'Remove',
     deleteGroupTitle: 'Delete this group?',
@@ -265,6 +285,15 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: '薄く透明感のあるガラス。よりリキッドで奥行きのある表現。',
     language: '言語',
     replayOnboarding: 'チュートリアルを再生',
+    data: 'データ',
+    exportBackup: 'バックアップを書き出す (JSON)',
+    exportCsv: '支出を書き出す (CSV)',
+    importBackup: 'バックアップを読み込む',
+    dataPrivacyNote: 'データはこの端末にのみ保存されます。バックアップや他端末への移行に使えます。どこにもアップロードされません。',
+    importedTitle: 'バックアップを読み込みました',
+    importedMsg: (n) => `${n}件のグループを読み込みました。同じIDの既存グループは更新されました。`,
+    importFailedTitle: '読み込みに失敗しました',
+    nothingToExport: '書き出すグループがまだありません。',
     ok: 'OK',
     remove: '削除',
     deleteGroupTitle: 'グループを削除しますか？',
@@ -349,6 +378,15 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: '轻薄通透的玻璃，边缘高光清晰，更具流动感与层次。',
     language: '语言',
     replayOnboarding: '重新观看引导',
+    data: '数据',
+    exportBackup: '导出备份 (JSON)',
+    exportCsv: '导出支出 (CSV)',
+    importBackup: '导入备份',
+    dataPrivacyNote: '你的数据仅保存在此设备上。可用于备份或迁移到其他设备，不会上传到任何地方。',
+    importedTitle: '备份已导入',
+    importedMsg: (n) => `已导入 ${n} 个群组。相同 ID 的现有群组已更新。`,
+    importFailedTitle: '导入失败',
+    nothingToExport: '还没有可导出的群组。',
     ok: '知道了',
     remove: '移除',
     deleteGroupTitle: '删除此群组？',
