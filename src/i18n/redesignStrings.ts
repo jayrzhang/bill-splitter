@@ -72,6 +72,7 @@ export interface RedesignStrings {
   addExpense: string;
   editExpense: string;
   descPlaceholder: string;
+  notePlaceholder: string;
   group: string;
   whoPaid: string;
   splitBetween: string;
@@ -172,6 +173,7 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     addExpense: 'Add expense',
     editExpense: 'Edit expense',
     descPlaceholder: 'What was it for?',
+    notePlaceholder: 'Add a note (optional)',
     group: 'Group',
     whoPaid: 'Who paid',
     splitBetween: 'Split between',
@@ -265,6 +267,7 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     addExpense: '支出を追加',
     editExpense: '支出を編集',
     descPlaceholder: '何の支出？',
+    notePlaceholder: 'メモを追加（任意）',
     group: 'グループ',
     whoPaid: '支払った人',
     splitBetween: '分担',
@@ -358,6 +361,7 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     addExpense: '添加支出',
     editExpense: '编辑支出',
     descPlaceholder: '这笔用于？',
+    notePlaceholder: '添加备注（可选）',
     group: '群组',
     whoPaid: '谁付款',
     splitBetween: '分摊',

@@ -24,6 +24,7 @@ interface Draft {
   paidBy: string;
   splitType: 'equal' | 'custom';
   shares: Record<string, string>;
+  note: string;
 }
 
 interface ConfirmCfg {
@@ -156,6 +157,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       paidBy: g?.members[0]?.id || '',
       splitType: 'equal',
       shares: {},
+      note: '',
     });
     setAddOpen(true);
   };
@@ -217,7 +219,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     setCurrentGroup(g.id);
     setDraft({
       id: e.id, groupId: g.id, locked: true, amount: String(e.amount), desc: e.description,
-      category: (e.category as ExpenseCategoryId) || 'other', paidBy: e.paidBy, splitType: e.splitType, shares,
+      category: (e.category as ExpenseCategoryId) || 'other', paidBy: e.paidBy, splitType: e.splitType, shares, note: e.note || '',
     });
     setAddOpen(true);
   };
@@ -243,6 +245,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       paidBy: draft.paidBy || ids[0],
       splitType: draft.splitType,
       splits,
+      note: draft.note.trim() || undefined,
       date: new Date(),
     };
     if (draft.id) {
@@ -359,10 +362,10 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   };
   const exportCsv = () => {
     if (groups.every((g) => g.expenses.length === 0)) return noticeOk(tx.data, tx.nothingToExport);
-    const rows: unknown[][] = [['Group', 'Date', 'Description', 'Category', 'Amount', 'Currency', 'Paid by', 'Split']];
+    const rows: unknown[][] = [['Group', 'Date', 'Description', 'Category', 'Amount', 'Currency', 'Paid by', 'Split', 'Note']];
     groups.forEach((g) =>
       g.expenses.forEach((e) =>
-        rows.push([g.name, new Date(e.date).toISOString().slice(0, 10), e.description, e.category || '', e.amount, g.currency, memberName(g, e.paidBy), e.splitType])
+        rows.push([g.name, new Date(e.date).toISOString().slice(0, 10), e.description, e.category || '', e.amount, g.currency, memberName(g, e.paidBy), e.splitType, e.note || ''])
       )
     );
     download(`splitaa-expenses-${stamp()}.csv`, rows.map((r) => r.map(csvCell).join(',')).join('\n'), 'text/csv');
@@ -522,6 +525,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</div>
                   <div style={{ fontSize: 12, color: V.dim, marginTop: 2 }}>{tx.paidByOn(memberName(g, e.paidBy), dateStr(e.date))}</div>
+                  {e.note && <div style={{ fontSize: 12, color: V.faint, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.note}</div>}
                 </div>
                 <div style={{ textAlign: 'right', flex: 'none' }}>
                   <div style={{ fontWeight: 750, letterSpacing: '-.01em' }}>{fmt(e.amount, g.currencySymbol)}</div>
@@ -868,6 +872,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
               </div>
             </div>
             <input value={draft.desc} onChange={(e) => patchDraft({ desc: e.target.value })} placeholder={tx.descPlaceholder} style={{ width: '100%', textAlign: 'center', fontSize: 16, fontWeight: 600, padding: 10, color: V.text }} />
+
+            <textarea value={draft.note} onChange={(e) => patchDraft({ note: e.target.value })} placeholder={tx.notePlaceholder} rows={2} style={{ width: '100%', marginTop: 6, resize: 'none', ...surfaceCard, borderRadius: 12, padding: '10px 12px', fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: V.text }} />
 
             {!draft.locked && (
               <>

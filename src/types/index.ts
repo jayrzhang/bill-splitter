@@ -30,6 +30,7 @@ export interface Expense {
   paidBy: string; // Person ID who paid
   splitType: SplitType;
   splits: Split[]; // How the expense is divided
+  note?: string; // Optional free-text note / details
   date: Date;
   createdAt: Date;
 }

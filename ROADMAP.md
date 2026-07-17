@@ -62,7 +62,7 @@ The foundation is already live and is the thing every later phase builds on.
 - [x] **Data ownership tools.** One-tap **export/import** (JSON + CSV), full local backup,
   and a visible "your data never leaves this device unless you share it" statement.
 - [ ] **Receipts / photos** attached to expenses (stored locally).
-- [ ] **Notes & comments** on expenses.
+- [x] **Notes** on expenses. *(Threaded multi-author comments deferred to Phase 2, where sync/identity make them meaningful.)*
 - [ ] **Recurring expenses** (rent, subscriptions).
 - [ ] **Split by percentage / shares / adjustment**, saved as reusable **split templates**.
 - [ ] **Multi-currency done right:** per-expense currency + **FX rate captured at the
