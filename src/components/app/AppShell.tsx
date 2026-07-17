@@ -68,6 +68,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const [newMember, setNewMember] = useState('');
   const [tplSaving, setTplSaving] = useState(false);
   const [tplName, setTplName] = useState('');
+  const [shareMode, setShareMode] = useState<'readonly' | 'editable'>('readonly');
   const [readOnlyGroup, setReadOnlyGroup] = useState<Group | null>(null);
 
   // create / edit group form
@@ -118,14 +119,14 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const expCatColor = (id?: string) => EXPENSE_CATEGORIES.find((c) => c.id === id)?.color || '#8a8f98';
   const groupCatColor = (id?: string) => GROUP_CATEGORIES.find((c) => c.id === id)?.color || '#8a8f98';
   const memberName = (g: Group, id: string) => g.members.find((m) => m.id === id)?.name || '';
-  const shareUrlFor = (g: Group) => {
+  const shareUrlFor = (g: Group, readonly = true) => {
     const data = {
       id: g.id, name: g.name, description: g.description, category: g.category,
       currency: g.currency, currencySymbol: g.currencySymbol,
       members: g.members, expenses: g.expenses, settlements: g.settlements, splitTemplates: g.splitTemplates,
       createdAt: g.createdAt, updatedAt: g.updatedAt,
     };
-    return `${window.location.origin}/?share=${compressToEncodedURIComponent(JSON.stringify(data))}&readonly=true`;
+    return `${window.location.origin}/?share=${compressToEncodedURIComponent(JSON.stringify(data))}${readonly ? '&readonly=true' : ''}`;
   };
 
   const activeGroup: Group | null = readOnly ? readOnlyGroup : groups.find((g) => g.id === currentGroupId) || null;
@@ -558,7 +559,9 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   // ============================================================
   // Onboarding gate
   // ============================================================
-  if (!readOnly && !onboarded) {
+  // A group deep-link (e.g. an editable share link that imported a group and
+  // navigated to /group/:id) should open straight into the group, not onboarding.
+  if (!readOnly && !onboarded && !initialGroupId) {
     return <Shell theme={theme} glass={glass}><Onboarding /></Shell>;
   }
 
@@ -782,16 +785,21 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const renderInvite = () => {
     if (!activeGroup) return null;
     const g = activeGroup;
-    const url = shareUrlFor(g);
+    const readonly = shareMode === 'readonly';
+    const url = shareUrlFor(g, readonly);
     return (
       <div style={{ animation: 'dc-screenIn .3s ease' }}>
         <p style={{ color: V.dim, fontSize: 14, margin: '2px 4px 16px', lineHeight: 1.5 }}>{tx.inviteIntro}</p>
         <label style={{ ...labelStyle({ margin: '0 2px 8px' }) }}>{tx.shareLink}</label>
+        <div style={{ display: 'flex', gap: 6, ...surfaceCard, borderRadius: 12, padding: 5, marginBottom: 8 }}>
+          <button onClick={() => setShareMode('readonly')} style={segStyle(readonly)}>{tx.shareReadonly}</button>
+          <button onClick={() => setShareMode('editable')} style={segStyle(!readonly)}>{tx.shareEditable}</button>
+        </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', ...surfaceCard, borderRadius: 14, padding: '6px 6px 6px 15px' }}>
           <div style={{ flex: 1, fontSize: 13, color: V.dim, fontFamily: 'ui-monospace,monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{url}</div>
           <button onClick={() => copyLink(url)} aria-label={tx.a11yCopyLink} style={{ padding: '9px 15px', borderRadius: 10, background: V.surface2, border: `1px solid ${V.border}`, fontWeight: 700, fontSize: 13, color: copied ? V.accent : V.text }}>{copied ? tx.copied : tx.copy}</button>
         </div>
-        <div style={{ fontSize: 12.5, color: V.faint, margin: '8px 4px 0', lineHeight: 1.5 }}>{tx.inviteHint}</div>
+        <div style={{ fontSize: 12.5, color: V.faint, margin: '8px 4px 0', lineHeight: 1.5 }}>{readonly ? tx.inviteHint : tx.shareEditableHint}</div>
 
         <label style={{ ...labelStyle({ margin: '22px 2px 8px' }) }}>{tx.membersCount(g.members.length)}</label>
         <div style={{ ...surfaceCard, borderRadius: 16, overflow: 'hidden' }}>

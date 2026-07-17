@@ -58,11 +58,12 @@ The foundation is already live and is the thing every later phase builds on.
 - [x] **Installable PWA + full offline.** Service worker (Workbox precache + SPA
   navigate-fallback), web manifest, maskable icons, "Add to Home Screen," works in
   airplane mode. → *Competitors gate real offline behind native apps + login.*
-- [ ] **Editable share links, not just read-only.** Add an explicit "collaborative link"
-  mode as the on-ramp to real sync (Phase 2).
+- [x] **Editable share links, not just read-only.** Invite screen offers a Read-only or
+  Editable-copy link; the editable link imports a working copy into the recipient's device
+  (a fork, not live sync — that's the Phase 2 on-ramp).
 - [x] **Data ownership tools.** One-tap **export/import** (JSON + CSV), full local backup,
   and a visible "your data never leaves this device unless you share it" statement.
-- [ ] **Receipts / photos** attached to expenses (stored locally).
+- [x] **Receipts / photos** attached to expenses (stored locally, compressed).
 - [x] **Notes** on expenses. *(Threaded multi-author comments deferred to Phase 2, where sync/identity make them meaningful.)*
 - [x] **Recurring expenses** (rent, subscriptions). *Weekly/monthly rule on an expense; due occurrences are materialized client-side on app load (no server needed).*
 - [x] **Split by percentage & shares** (weights) — clamped inputs, live amount preview, raw values preserved for editing.

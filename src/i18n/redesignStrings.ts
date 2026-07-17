@@ -48,6 +48,9 @@ export interface RedesignStrings {
   inviteIntro: string;
   inviteHint: string;
   shareLink: string;
+  shareReadonly: string;
+  shareEditable: string;
+  shareEditableHint: string;
   copy: string;
   copied: string;
   membersCount: (n: number) => string;
@@ -179,6 +182,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     inviteIntro: 'Anyone with the link can view this group as a read-only snapshot.',
     inviteHint: 'The link works on any device — no account needed.',
     shareLink: 'Share link',
+    shareReadonly: 'Read-only',
+    shareEditable: 'Editable copy',
+    shareEditableHint: 'Opens as their own editable copy on their device — their changes stay with them.',
     copy: 'Copy',
     copied: 'Copied',
     membersCount: (n) => `Members · ${n}`,
@@ -297,6 +303,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     inviteIntro: 'リンクを知っている人は、このグループを閲覧専用で確認できます。',
     inviteHint: 'アカウント不要。どの端末でもリンクが使えます。',
     shareLink: '共有リンク',
+    shareReadonly: '閲覧のみ',
+    shareEditable: '編集可能なコピー',
+    shareEditableHint: '相手の端末に編集可能なコピーとして開きます。変更は相手側に留まります。',
     copy: 'コピー',
     copied: 'コピー済み',
     membersCount: (n) => `メンバー · ${n}人`,
@@ -415,6 +424,9 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     inviteIntro: '任何拥有链接的人都可以以只读方式查看此群组。',
     inviteHint: '无需账户，链接在任何设备上都可使用。',
     shareLink: '分享链接',
+    shareReadonly: '只读',
+    shareEditable: '可编辑副本',
+    shareEditableHint: '在对方设备上以可编辑副本打开，对方的修改仅保留在其本地。',
     copy: '复制',
     copied: '已复制',
     membersCount: (n) => `成员 · ${n} 人`,
