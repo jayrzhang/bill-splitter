@@ -15,6 +15,14 @@ export interface Person {
 // Split configuration for an expense
 export type SplitType = 'equal' | 'custom';
 
+// Recurrence rule attached to an expense that spawns future occurrences.
+// nextDate is an ISO date string (YYYY-MM-DD) so it needs no date hydration.
+export type RecurrenceFrequency = 'weekly' | 'monthly';
+export interface Recurrence {
+  frequency: RecurrenceFrequency;
+  nextDate: string;
+}
+
 export interface Split {
   personId: string;
   amount: number; // For custom splits, this is the exact amount
@@ -31,6 +39,7 @@ export interface Expense {
   splitType: SplitType;
   splits: Split[]; // How the expense is divided
   note?: string; // Optional free-text note / details
+  recurrence?: Recurrence; // If set, this expense repeats and seeds future occurrences
   date: Date;
   createdAt: Date;
 }

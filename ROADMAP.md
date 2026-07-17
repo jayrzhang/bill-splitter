@@ -63,7 +63,7 @@ The foundation is already live and is the thing every later phase builds on.
   and a visible "your data never leaves this device unless you share it" statement.
 - [ ] **Receipts / photos** attached to expenses (stored locally).
 - [x] **Notes** on expenses. *(Threaded multi-author comments deferred to Phase 2, where sync/identity make them meaningful.)*
-- [ ] **Recurring expenses** (rent, subscriptions).
+- [x] **Recurring expenses** (rent, subscriptions). *Weekly/monthly rule on an expense; due occurrences are materialized client-side on app load (no server needed).*
 - [ ] **Split by percentage / shares / adjustment**, saved as reusable **split templates**.
 - [ ] **Multi-currency done right:** per-expense currency + **FX rate captured at the
   expense's date**, so historical trips reconcile correctly instead of using today's rate.

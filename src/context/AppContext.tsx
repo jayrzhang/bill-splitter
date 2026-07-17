@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import type { Group, Person, Expense, Settlement, GroupSummary } from '@/types';
 import { StorageService } from '@/lib/storage';
-import { generateId } from '@/lib/utils';
+import { generateId, toIsoDate, advanceIsoDate } from '@/lib/utils';
 import { calculateBalances, simplifyDebts } from '@/lib/calculations';
 import { PERSON_COLORS, DEFAULT_CURRENCY, CURRENCIES, type GroupCategoryId } from '@/lib/constants';
 import { decompressFromEncodedURIComponent } from 'lz-string';
@@ -140,6 +140,45 @@ export function AppProvider({ children }: { children: ReactNode }) {
       StorageService.saveCurrentGroupId(currentGroupId);
     }
   }, [currentGroupId, isInitialized]);
+
+  // Materialize any due recurring expenses once, on load. Each recurring expense
+  // seeds concrete (non-recurring) occurrences up to today, then advances its own
+  // nextDate. Runs client-side since there is no server to generate them.
+  useEffect(() => {
+    if (!isInitialized) return;
+    const todayIso = toIsoDate(new Date());
+    setGroups((prev) => {
+      let changed = false;
+      const next = prev.map((group) => {
+        const spawned: Expense[] = [];
+        const expenses = group.expenses.map((e) => {
+          if (!e.recurrence) return e;
+          let nextIso = e.recurrence.nextDate;
+          let guard = 0;
+          while (nextIso <= todayIso && guard < 60) {
+            guard++;
+            const [y, m, d] = nextIso.split('-').map(Number);
+            spawned.push({
+              ...e,
+              id: generateId(),
+              date: new Date(y, m - 1, d), // local calendar day, displays correctly
+              createdAt: new Date(),
+              recurrence: undefined,
+            });
+            nextIso = advanceIsoDate(nextIso, e.recurrence.frequency);
+          }
+          if (guard > 0) {
+            changed = true;
+            return { ...e, recurrence: { ...e.recurrence, nextDate: nextIso } };
+          }
+          return e;
+        });
+        return spawned.length ? { ...group, expenses: [...expenses, ...spawned] } : { ...group, expenses };
+      });
+      return changed ? next : prev;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isInitialized]);
 
   // Group operations
   const createGroup = (name: string, description?: string, currencyCode?: string, category?: GroupCategoryId, startDate?: Date, endDate?: Date, memberNames?: string[]): Group => {

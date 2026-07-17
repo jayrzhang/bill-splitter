@@ -83,6 +83,10 @@ export interface RedesignStrings {
   cancel: string;
   deleteExpense: string;
   needTwoMembers: string;
+  repeat: string;
+  repeatNone: string;
+  repeatWeekly: string;
+  repeatMonthly: string;
 
   // settings
   appearance: string;
@@ -184,6 +188,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     cancel: 'Cancel',
     deleteExpense: 'Delete expense',
     needTwoMembers: 'Add at least 2 members to this group first.',
+    repeat: 'Repeat',
+    repeatNone: 'None',
+    repeatWeekly: 'Weekly',
+    repeatMonthly: 'Monthly',
     appearance: 'Appearance',
     light: 'Light',
     dark: 'Dark',
@@ -278,6 +286,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     cancel: 'キャンセル',
     deleteExpense: '支出を削除',
     needTwoMembers: 'まずこのグループに2人以上のメンバーを追加してください。',
+    repeat: '繰り返し',
+    repeatNone: 'なし',
+    repeatWeekly: '毎週',
+    repeatMonthly: '毎月',
     appearance: '外観',
     light: 'ライト',
     dark: 'ダーク',
@@ -372,6 +384,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     cancel: '取消',
     deleteExpense: '删除支出',
     needTwoMembers: '请先为此群组添加至少 2 名成员。',
+    repeat: '重复',
+    repeatNone: '不重复',
+    repeatWeekly: '每周',
+    repeatMonthly: '每月',
     appearance: '外观',
     light: '浅色',
     dark: '深色',

@@ -6,8 +6,9 @@ import { redesignStrings } from '@/i18n/redesignStrings';
 import { calculateBalances, simplifyDebts, calculateEqualSplits, validateSplits } from '@/lib/calculations';
 import { CURRENCIES, EXPENSE_CATEGORIES, GROUP_CATEGORIES, PERSON_COLORS } from '@/lib/constants';
 import type { ExpenseCategoryId, GroupCategoryId } from '@/lib/constants';
-import type { Group, Split } from '@/types';
+import type { Group, Split, Recurrence } from '@/types';
 import { compressToEncodedURIComponent } from 'lz-string';
+import { toIsoDate, advanceIsoDate } from '@/lib/utils';
 import { Icon, expenseCatKey, groupCatKey } from '@/lib/icons';
 import { V, glassPanel, surfaceCard, chipStyle, segStyle, initials, primaryBtn, backdrop } from './glass';
 import Onboarding from './Onboarding';
@@ -25,6 +26,7 @@ interface Draft {
   splitType: 'equal' | 'custom';
   shares: Record<string, string>;
   note: string;
+  repeat: 'none' | 'weekly' | 'monthly';
 }
 
 interface ConfirmCfg {
@@ -158,6 +160,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splitType: 'equal',
       shares: {},
       note: '',
+      repeat: 'none',
     });
     setAddOpen(true);
   };
@@ -220,6 +223,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     setDraft({
       id: e.id, groupId: g.id, locked: true, amount: String(e.amount), desc: e.description,
       category: (e.category as ExpenseCategoryId) || 'other', paidBy: e.paidBy, splitType: e.splitType, shares, note: e.note || '',
+      repeat: e.recurrence?.frequency || 'none',
     });
     setAddOpen(true);
   };
@@ -237,6 +241,16 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splits = ids.map((id) => ({ personId: id, amount: parseFloat(draft.shares[id]) || 0 }));
       if (!validateSplits(amt, splits)) return;
     }
+    const orig = draft.id ? g.expenses.find((x) => x.id === draft.id) : undefined;
+    let recurrence: Recurrence | undefined;
+    if (draft.repeat !== 'none') {
+      if (orig?.recurrence?.frequency === draft.repeat) {
+        recurrence = orig.recurrence; // frequency unchanged → keep existing schedule
+      } else {
+        const base = orig?.date ? new Date(orig.date) : new Date();
+        recurrence = { frequency: draft.repeat, nextDate: advanceIsoDate(toIsoDate(base), draft.repeat) };
+      }
+    }
     const payload = {
       groupId: g.id,
       description: draft.desc.trim() || EXPENSE_CATEGORIES.find((c) => c.id === draft.category)?.name || draft.category,
@@ -246,6 +260,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       splitType: draft.splitType,
       splits,
       note: draft.note.trim() || undefined,
+      recurrence,
       date: new Date(),
     };
     if (draft.id) {
@@ -524,7 +539,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontWeight: 680, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.description}</div>
-                  <div style={{ fontSize: 12, color: V.dim, marginTop: 2 }}>{tx.paidByOn(memberName(g, e.paidBy), dateStr(e.date))}</div>
+                  <div style={{ fontSize: 12, color: V.dim, marginTop: 2 }}>{tx.paidByOn(memberName(g, e.paidBy), dateStr(e.date))}{e.recurrence ? ` · ↻ ${e.recurrence.frequency === 'weekly' ? tx.repeatWeekly : tx.repeatMonthly}` : ''}</div>
                   {e.note && <div style={{ fontSize: 12, color: V.faint, marginTop: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.note}</div>}
                 </div>
                 <div style={{ textAlign: 'right', flex: 'none' }}>
@@ -949,6 +964,15 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                       <span>{tx.remaining}</span><span>{fmt(remainder, symbol)}</span>
                     </div>
                   )}
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 2px 0' }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: V.dim }}>{tx.repeat}</span>
+                  <div style={{ display: 'flex', gap: 5, background: V.surface3, borderRadius: 11, padding: 4 }}>
+                    {(['none', 'weekly', 'monthly'] as const).map((k) => (
+                      <button key={k} onClick={() => patchDraft({ repeat: k })} style={draft.repeat === k ? { padding: '7px 12px', borderRadius: 9, background: V.accent, color: V.accentInk, fontWeight: 700, fontSize: 13 } : { padding: '7px 12px', borderRadius: 9, color: V.dim, fontWeight: 650, fontSize: 13 }}>{k === 'none' ? tx.repeatNone : k === 'weekly' ? tx.repeatWeekly : tx.repeatMonthly}</button>
+                    ))}
+                  </div>
                 </div>
 
                 <button onClick={saveExpense} style={{ ...primaryBtn, marginTop: 22, fontWeight: 750, opacity: saveOk ? 1 : 0.45 }}>{draft.id ? tx.saveChanges : tx.addExpense}</button>
