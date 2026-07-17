@@ -6,7 +6,7 @@ import { redesignStrings } from '@/i18n/redesignStrings';
 import { calculateBalances, simplifyDebts, calculateEqualSplits, validateSplits } from '@/lib/calculations';
 import { CURRENCIES, EXPENSE_CATEGORIES, GROUP_CATEGORIES, PERSON_COLORS } from '@/lib/constants';
 import type { ExpenseCategoryId, GroupCategoryId } from '@/lib/constants';
-import type { Group, Split, Recurrence } from '@/types';
+import type { Group, Split, Recurrence, SplitType } from '@/types';
 import { compressToEncodedURIComponent } from 'lz-string';
 import { toIsoDate, advanceIsoDate } from '@/lib/utils';
 import { Icon, expenseCatKey, groupCatKey } from '@/lib/icons';
@@ -23,8 +23,8 @@ interface Draft {
   desc: string;
   category: ExpenseCategoryId;
   paidBy: string;
-  splitType: 'equal' | 'custom';
-  shares: Record<string, string>;
+  splitType: SplitType;
+  shares: Record<string, string>; // per-member raw input for the active mode (amount / % / weight)
   note: string;
   repeat: 'none' | 'weekly' | 'monthly';
 }
@@ -169,56 +169,77 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     setDraft(null);
   };
   const patchDraft = (p: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...p } : d));
-  const setMode = (mode: 'equal' | 'custom') => {
-    if (!draft) return;
-    if (mode === 'custom' && Object.keys(draft.shares).length === 0) {
-      const g = groups.find((x) => x.id === draft.groupId);
-      const total = parseFloat(draft.amount) || 0;
-      const shares: Record<string, string> = {};
-      if (g && total > 0) {
-        calculateEqualSplits(total, g.members.map((m) => m.id)).forEach((s) => {
-          shares[s.personId] = String(s.amount);
-        });
-      }
-      setDraft({ ...draft, splitType: mode, shares });
-    } else {
-      setDraft({ ...draft, splitType: mode });
-    }
-  };
-  // clean numeric string for a share (JPY/CNY have no decimals)
+  // clean numeric string for a share (JPY/CNY have no decimals for amount modes)
   const shareNumStr = (val: number, symbol: string) => (symbol === '¥' ? String(Math.round(val)) : String(Number(val.toFixed(2))));
+  const pctStr = (val: number) => String(Number(val.toFixed(2)));
+  // seed the per-member inputs for the chosen split mode
+  const setMode = (mode: SplitType) => {
+    if (!draft) return;
+    const g = groups.find((x) => x.id === draft.groupId);
+    if (!g || mode === 'equal') {
+      setDraft({ ...draft, splitType: mode });
+      return;
+    }
+    const ids = g.members.map((m) => m.id);
+    const total = parseFloat(draft.amount) || 0;
+    const shares: Record<string, string> = {};
+    if (mode === 'custom') {
+      (total > 0 ? calculateEqualSplits(total, ids) : ids.map((id) => ({ personId: id, amount: 0 }))).forEach((s) => {
+        shares[s.personId] = String(s.amount);
+      });
+    } else if (mode === 'percentage') {
+      const base = Math.floor((10000 / ids.length)) / 100; // even %, 2 decimals
+      ids.forEach((id, i) => (shares[id] = pctStr(i === 0 ? 100 - base * (ids.length - 1) : base)));
+    } else {
+      ids.forEach((id) => (shares[id] = '1')); // equal weights
+    }
+    setDraft({ ...draft, splitType: mode, shares });
+  };
   const othersShareSum = (id: string) => {
     if (!draft) return 0;
     const g = groups.find((x) => x.id === draft.groupId);
     if (!g) return 0;
     return g.members.reduce((s, m) => (m.id === id ? s : s + (parseFloat(draft.shares[m.id]) || 0)), 0);
   };
-  // set a member's custom share, clamped so the splits can never exceed the total
+  // set a member's input, clamped so amounts can't exceed the total / percentages can't exceed 100
   const setDraftShare = (id: string, raw: string) => {
     if (!draft) return;
     const g = groups.find((x) => x.id === draft.groupId);
     let v = raw.replace(/[^0-9.]/g, '');
     const num = parseFloat(v);
     if (g && !isNaN(num)) {
-      const total = parseFloat(draft.amount) || 0;
-      const max = Math.max(0, total - othersShareSum(id));
-      if (num > max) v = shareNumStr(max, g.currencySymbol);
+      if (draft.splitType === 'custom') {
+        const max = Math.max(0, (parseFloat(draft.amount) || 0) - othersShareSum(id));
+        if (num > max) v = shareNumStr(max, g.currencySymbol);
+      } else if (draft.splitType === 'percentage') {
+        const max = Math.max(0, 100 - othersShareSum(id));
+        if (num > max) v = pctStr(max);
+      }
+      // shares (weights): no clamp
     }
     patchDraft({ shares: { ...draft.shares, [id]: v } });
   };
-  // give the leftover amount to one member (fills their field to the remaining)
+  // fill one member's field with the leftover (amount for custom, % for percentage)
   const fillRemainingShare = (id: string) => {
     if (!draft) return;
     const g = groups.find((x) => x.id === draft.groupId);
     if (!g) return;
-    const total = parseFloat(draft.amount) || 0;
-    patchDraft({ shares: { ...draft.shares, [id]: shareNumStr(Math.max(0, total - othersShareSum(id)), g.currencySymbol) } });
+    if (draft.splitType === 'percentage') {
+      patchDraft({ shares: { ...draft.shares, [id]: pctStr(Math.max(0, 100 - othersShareSum(id))) } });
+    } else {
+      const total = parseFloat(draft.amount) || 0;
+      patchDraft({ shares: { ...draft.shares, [id]: shareNumStr(Math.max(0, total - othersShareSum(id)), g.currencySymbol) } });
+    }
   };
   const openEditExpense = (g: Group, expenseId: string) => {
     const e = g.expenses.find((x) => x.id === expenseId);
     if (!e) return;
     const shares: Record<string, string> = {};
-    e.splits.forEach((s) => (shares[s.personId] = String(s.amount)));
+    if ((e.splitType === 'percentage' || e.splitType === 'shares') && e.splitValues) {
+      Object.entries(e.splitValues).forEach(([id, v]) => (shares[id] = String(v)));
+    } else {
+      e.splits.forEach((s) => (shares[s.personId] = String(s.amount)));
+    }
     setCurrentGroup(g.id);
     setDraft({
       id: e.id, groupId: g.id, locked: true, amount: String(e.amount), desc: e.description,
@@ -234,12 +255,32 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const amt = parseFloat(draft.amount);
     if (!amt || amt <= 0) return;
     const ids = g.members.map((m) => m.id);
+    // resolve final split amounts (+ raw values for percentage/shares so edit reopens)
+    const fixRounding = (arr: Split[]) => {
+      const sum = arr.reduce((s, x) => s + x.amount, 0);
+      const diff = Number((amt - sum).toFixed(2));
+      if (diff !== 0 && arr.length) arr[0].amount = Number((arr[0].amount + diff).toFixed(2));
+    };
     let splits: Split[];
+    let splitValues: Record<string, number> | undefined;
     if (draft.splitType === 'equal') {
       splits = calculateEqualSplits(amt, ids);
-    } else {
+    } else if (draft.splitType === 'custom') {
       splits = ids.map((id) => ({ personId: id, amount: parseFloat(draft.shares[id]) || 0 }));
       if (!validateSplits(amt, splits)) return;
+    } else if (draft.splitType === 'percentage') {
+      const pct = ids.map((id) => parseFloat(draft.shares[id]) || 0);
+      if (Math.abs(pct.reduce((a, b) => a + b, 0) - 100) > 0.01) return;
+      splits = ids.map((id, i) => ({ personId: id, amount: Number(((amt * pct[i]) / 100).toFixed(2)) }));
+      fixRounding(splits);
+      splitValues = Object.fromEntries(ids.map((id, i) => [id, pct[i]]));
+    } else {
+      const w = ids.map((id) => parseFloat(draft.shares[id]) || 0);
+      const sumW = w.reduce((a, b) => a + b, 0);
+      if (sumW <= 0) return;
+      splits = ids.map((id, i) => ({ personId: id, amount: Number(((amt * w[i]) / sumW).toFixed(2)) }));
+      fixRounding(splits);
+      splitValues = Object.fromEntries(ids.map((id, i) => [id, w[i]]));
     }
     const orig = draft.id ? g.expenses.find((x) => x.id === draft.id) : undefined;
     let recurrence: Recurrence | undefined;
@@ -259,6 +300,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       paidBy: draft.paidBy || ids[0],
       splitType: draft.splitType,
       splits,
+      splitValues,
       note: draft.note.trim() || undefined,
       recurrence,
       date: new Date(),
@@ -861,11 +903,26 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const symbol = g ? g.currencySymbol : '$';
     const eligible = g && g.members.length >= 2;
     const total = parseFloat(draft.amount) || 0;
-    const eq = g && g.members.length ? total / g.members.length : 0;
-    const assigned = g ? g.members.reduce((s, m) => s + (parseFloat(draft.shares[m.id]) || 0), 0) : 0;
-    const remainder = total - assigned;
+    const members = g ? g.members : [];
+    const eq = members.length ? total / members.length : 0;
+    const mode = draft.splitType;
+    const rawSum = members.reduce((s, m) => s + (parseFloat(draft.shares[m.id]) || 0), 0);
+    const remainderAmt = total - rawSum; // custom
+    const remainderPct = 100 - rawSum; // percentage
+    const computedFor = (id: string) => {
+      const raw = parseFloat(draft.shares[id]) || 0;
+      if (mode === 'equal') return eq;
+      if (mode === 'custom') return raw;
+      if (mode === 'percentage') return (total * raw) / 100;
+      return rawSum > 0 ? (total * raw) / rawSum : 0; // shares
+    };
     const amountWidth = `${Math.max(1, (draft.amount || '0').length)}ch`;
-    const saveOk = total > 0 && eligible && (draft.splitType === 'equal' || Math.abs(remainder) < 0.01);
+    const saveOk =
+      total > 0 && eligible &&
+      (mode === 'equal' ? true
+        : mode === 'custom' ? Math.abs(remainderAmt) < 0.01
+        : mode === 'percentage' ? Math.abs(remainderPct) < 0.01
+        : rawSum > 0);
 
     return (
       <>
@@ -929,39 +986,46 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                   })}
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '20px 2px 8px' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: V.dim }}>{tx.splitBetween}</span>
-                  <div style={{ display: 'flex', gap: 5, background: V.surface3, borderRadius: 11, padding: 4 }}>
-                    {(['equal', 'custom'] as const).map((k) => (
-                      <button key={k} onClick={() => setMode(k)} style={draft.splitType === k ? { padding: '7px 14px', borderRadius: 9, background: V.accent, color: V.accentInk, fontWeight: 700, fontSize: 13 } : { padding: '7px 14px', borderRadius: 9, color: V.dim, fontWeight: 650, fontSize: 13 }}>{k === 'equal' ? tx.equal : tx.custom}</button>
-                    ))}
-                  </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: V.dim, margin: '20px 2px 8px' }}>{tx.splitBetween}</div>
+                <div style={{ display: 'flex', gap: 4, background: V.surface3, borderRadius: 11, padding: 4, marginBottom: 10 }}>
+                  {(['equal', 'custom', 'percentage', 'shares'] as const).map((k) => {
+                    const active = mode === k;
+                    const lbl = k === 'equal' ? tx.equal : k === 'custom' ? tx.custom : k === 'percentage' ? tx.splitPercent : tx.splitShares;
+                    return <button key={k} onClick={() => setMode(k)} style={{ flex: 1, padding: '7px 4px', borderRadius: 8, textAlign: 'center', background: active ? V.accent : 'transparent', color: active ? V.accentInk : V.dim, fontWeight: active ? 700 : 650, fontSize: 12.5 }}>{lbl}</button>;
+                  })}
                 </div>
                 <div style={{ ...surfaceCard, borderRadius: 16, overflow: 'hidden' }}>
-                  {g!.members.map((m) => (
-                    <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 15px', borderBottom: `1px solid ${V.border}` }}>
-                      <div style={{ width: 32, height: 32, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>{initials(m.name)}</div>
-                      <div style={{ flex: 1, fontWeight: 600, fontSize: 14 }}>{m.name}</div>
-                      {draft.splitType === 'custom' ? (
-                        <>
-                          {remainder > 0.005 && (
-                            <button onClick={() => fillRemainingShare(m.id)} title={`${tx.remaining}: ${fmt(remainder, symbol)}`} style={{ flex: 'none', width: 28, height: 28, borderRadius: 9, background: 'rgba(31,182,171,.14)', border: `1px solid ${V.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <Icon name="plus" size={14} color={V.accent} strokeWidth={2.5} />
-                            </button>
-                          )}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 3, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 10, padding: '6px 10px' }}>
-                            <span style={{ fontSize: 13, color: V.dim }}>{symbol}</span>
-                            <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode="decimal" style={{ width: 60, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
-                          </div>
-                        </>
-                      ) : (
-                        <div style={{ fontWeight: 700, fontSize: 14, color: V.dim }}>{fmt(eq, symbol)}</div>
-                      )}
-                    </div>
-                  ))}
-                  {draft.splitType === 'custom' && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 15px', fontSize: 13, fontWeight: 700, color: Math.abs(remainder) < 0.01 ? V.pos : V.neg }}>
-                      <span>{tx.remaining}</span><span>{fmt(remainder, symbol)}</span>
+                  {members.map((m) => {
+                    const showFill = (mode === 'custom' && remainderAmt > 0.005) || (mode === 'percentage' && remainderPct > 0.005);
+                    return (
+                      <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '11px 15px', borderBottom: `1px solid ${V.border}` }}>
+                        <div style={{ width: 32, height: 32, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>{initials(m.name)}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 600, fontSize: 14, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.name}</div>
+                          {(mode === 'percentage' || mode === 'shares') && <div style={{ fontSize: 11.5, color: V.faint, marginTop: 1 }}>{fmt(computedFor(m.id), symbol)}</div>}
+                        </div>
+                        {mode === 'equal' && <div style={{ fontWeight: 700, fontSize: 14, color: V.dim }}>{fmt(eq, symbol)}</div>}
+                        {mode !== 'equal' && (
+                          <>
+                            {showFill && (
+                              <button onClick={() => fillRemainingShare(m.id)} style={{ flex: 'none', width: 28, height: 28, borderRadius: 9, background: 'rgba(31,182,171,.14)', border: `1px solid ${V.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Icon name="plus" size={14} color={V.accent} strokeWidth={2.5} />
+                              </button>
+                            )}
+                            <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 3, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 10, padding: '6px 10px' }}>
+                              {mode === 'custom' && <span style={{ fontSize: 13, color: V.dim }}>{symbol}</span>}
+                              <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode="decimal" style={{ width: mode === 'custom' ? 60 : 48, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
+                              {mode === 'percentage' && <span style={{ fontSize: 13, color: V.dim }}>%</span>}
+                              {mode === 'shares' && <span style={{ fontSize: 13, color: V.dim }}>×</span>}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {(mode === 'custom' || mode === 'percentage') && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', padding: '11px 15px', fontSize: 13, fontWeight: 700, color: Math.abs(mode === 'custom' ? remainderAmt : remainderPct) < 0.01 ? V.pos : V.neg }}>
+                      <span>{tx.remaining}</span><span>{mode === 'custom' ? fmt(remainderAmt, symbol) : `${pctStr(remainderPct)}%`}</span>
                     </div>
                   )}
                 </div>

@@ -12,8 +12,9 @@ export interface Person {
   createdAt: Date;
 }
 
-// Split configuration for an expense
-export type SplitType = 'equal' | 'custom';
+// Split configuration for an expense.
+// 'custom' = exact amounts, 'percentage' = per-person %, 'shares' = per-person weights.
+export type SplitType = 'equal' | 'custom' | 'percentage' | 'shares';
 
 // Recurrence rule attached to an expense that spawns future occurrences.
 // nextDate is an ISO date string (YYYY-MM-DD) so it needs no date hydration.
@@ -37,7 +38,8 @@ export interface Expense {
   category?: ExpenseCategoryId; // Optional category for filtering
   paidBy: string; // Person ID who paid
   splitType: SplitType;
-  splits: Split[]; // How the expense is divided
+  splits: Split[]; // How the expense is divided (always the final resolved amounts)
+  splitValues?: Record<string, number>; // Raw per-person input for percentage/shares modes (so edit reopens correctly)
   note?: string; // Optional free-text note / details
   recurrence?: Recurrence; // If set, this expense repeats and seeds future occurrences
   date: Date;

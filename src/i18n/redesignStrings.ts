@@ -78,6 +78,8 @@ export interface RedesignStrings {
   splitBetween: string;
   equal: string;
   custom: string;
+  splitPercent: string;
+  splitShares: string;
   remaining: string;
   save: string;
   cancel: string;
@@ -183,6 +185,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     splitBetween: 'Split between',
     equal: 'Equal',
     custom: 'Custom',
+    splitPercent: '%',
+    splitShares: 'Shares',
     remaining: 'Remaining',
     save: 'Save',
     cancel: 'Cancel',
@@ -281,6 +285,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     splitBetween: '分担',
     equal: '均等',
     custom: 'カスタム',
+    splitPercent: '%',
+    splitShares: '比率',
     remaining: '残り',
     save: '保存',
     cancel: 'キャンセル',
@@ -379,6 +385,8 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     splitBetween: '分摊',
     equal: '均分',
     custom: '自定义',
+    splitPercent: '%',
+    splitShares: '份额',
     remaining: '剩余',
     save: '保存',
     cancel: '取消',

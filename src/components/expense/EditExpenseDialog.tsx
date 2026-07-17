@@ -36,7 +36,7 @@ export default function EditExpenseDialog({ expense, open, onOpenChange }: EditE
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<ExpenseCategoryId>('other');
   const [paidBy, setPaidBy] = useState('');
-  const [splitType, setSplitType] = useState<'equal' | 'custom'>('equal');
+  const [splitType, setSplitType] = useState<'equal' | 'custom' | 'percentage' | 'shares'>('equal');
   const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
   const [customSplits, setCustomSplits] = useState<Split[]>([]);
 
