@@ -67,7 +67,8 @@ The foundation is already live and is the thing every later phase builds on.
 - [x] **Recurring expenses** (rent, subscriptions). *Weekly/monthly rule on an expense; due occurrences are materialized client-side on app load (no server needed).*
 - [x] **Split by percentage & shares** (weights) — clamped inputs, live amount preview, raw values preserved for editing.
 - [x] **Adjustment splits** — equal split ± a per-person adjustment (amounts always total).
-- [ ] **Reusable split templates** (save a split config, apply to another expense/group).
+- [x] **Reusable split templates** — save a split config (mode + per-person values) per group,
+  apply it to any expense in that group; travels with the group's storage/share/export.
 - [x] **Multi-currency done right:** per-expense currency + an **editable FX rate stored
   on the expense** (suggested from a bundled table), converted into the group currency at
   entry — so historical trips reconcile correctly and never shift with later rates. No

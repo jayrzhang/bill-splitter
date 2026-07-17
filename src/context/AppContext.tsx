@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { Group, Person, Expense, Settlement, GroupSummary } from '@/types';
+import type { Group, Person, Expense, Settlement, GroupSummary, SplitTemplate } from '@/types';
 import { StorageService } from '@/lib/storage';
 import { generateId, toIsoDate, advanceIsoDate } from '@/lib/utils';
 import { calculateBalances, simplifyDebts } from '@/lib/calculations';
@@ -35,6 +35,10 @@ interface AppContextType {
   // Data ownership
   exportAllData: () => string;
   importAllData: (json: string) => { ok: boolean; count: number; error?: string };
+
+  // Split templates (per group)
+  addSplitTemplate: (groupId: string, template: Omit<SplitTemplate, 'id'>) => void;
+  deleteSplitTemplate: (groupId: string, templateId: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -412,6 +416,28 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Split templates
+  const addSplitTemplate = (groupId: string, template: Omit<SplitTemplate, 'id'>) => {
+    const newTemplate: SplitTemplate = { ...template, id: generateId() };
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, splitTemplates: [...(g.splitTemplates || []), newTemplate], updatedAt: new Date() }
+          : g
+      )
+    );
+  };
+
+  const deleteSplitTemplate = (groupId: string, templateId: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id === groupId
+          ? { ...g, splitTemplates: (g.splitTemplates || []).filter((t) => t.id !== templateId), updatedAt: new Date() }
+          : g
+      )
+    );
+  };
+
   const value: AppContextType = {
     groups,
     currentGroupId,
@@ -430,6 +456,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addSettlement,
     exportAllData,
     importAllData,
+    addSplitTemplate,
+    deleteSplitTemplate,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

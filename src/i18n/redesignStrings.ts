@@ -92,6 +92,10 @@ export interface RedesignStrings {
   repeatMonthly: string;
   exchangeRate: string;
   a11yCurrency: string;
+  templates: string;
+  saveTemplate: string;
+  templateNamePlaceholder: string;
+  a11yDeleteTemplate: string;
 
   // settings
   appearance: string;
@@ -212,6 +216,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatMonthly: 'Monthly',
     exchangeRate: 'Exchange rate',
     a11yCurrency: 'Expense currency',
+    templates: 'Templates',
+    saveTemplate: 'Save split',
+    templateNamePlaceholder: 'Template name',
+    a11yDeleteTemplate: 'Delete template',
     appearance: 'Appearance',
     light: 'Light',
     dark: 'Dark',
@@ -323,6 +331,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatMonthly: '毎月',
     exchangeRate: '為替レート',
     a11yCurrency: '支出の通貨',
+    templates: 'テンプレート',
+    saveTemplate: '分担を保存',
+    templateNamePlaceholder: 'テンプレート名',
+    a11yDeleteTemplate: 'テンプレートを削除',
     appearance: '外観',
     light: 'ライト',
     dark: 'ダーク',
@@ -434,6 +446,10 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     repeatMonthly: '每月',
     exchangeRate: '汇率',
     a11yCurrency: '支出货币',
+    templates: '模板',
+    saveTemplate: '保存分摊',
+    templateNamePlaceholder: '模板名称',
+    a11yDeleteTemplate: '删除模板',
     appearance: '外观',
     light: '浅色',
     dark: '深色',

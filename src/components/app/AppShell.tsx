@@ -6,7 +6,7 @@ import { redesignStrings } from '@/i18n/redesignStrings';
 import { calculateBalances, simplifyDebts, calculateEqualSplits, validateSplits } from '@/lib/calculations';
 import { CURRENCIES, EXPENSE_CATEGORIES, GROUP_CATEGORIES, PERSON_COLORS, suggestRate } from '@/lib/constants';
 import type { ExpenseCategoryId, GroupCategoryId } from '@/lib/constants';
-import type { Group, Split, Recurrence, SplitType } from '@/types';
+import type { Group, Split, Recurrence, SplitType, SplitTemplate } from '@/types';
 import { compressToEncodedURIComponent } from 'lz-string';
 import { toIsoDate, advanceIsoDate } from '@/lib/utils';
 import { Icon, expenseCatKey, groupCatKey } from '@/lib/icons';
@@ -65,6 +65,8 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const [confirm, setConfirm] = useState<ConfirmCfg | null>(null);
   const [copied, setCopied] = useState(false);
   const [newMember, setNewMember] = useState('');
+  const [tplSaving, setTplSaving] = useState(false);
+  const [tplName, setTplName] = useState('');
   const [readOnlyGroup, setReadOnlyGroup] = useState<Group | null>(null);
 
   // create / edit group form
@@ -118,7 +120,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const data = {
       id: g.id, name: g.name, description: g.description, category: g.category,
       currency: g.currency, currencySymbol: g.currencySymbol,
-      members: g.members, expenses: g.expenses, settlements: g.settlements,
+      members: g.members, expenses: g.expenses, settlements: g.settlements, splitTemplates: g.splitTemplates,
       createdAt: g.createdAt, updatedAt: g.updatedAt,
     };
     return `${window.location.origin}/?share=${compressToEncodedURIComponent(JSON.stringify(data))}&readonly=true`;
@@ -171,12 +173,45 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
   const closeAdd = () => {
     setAddOpen(false);
     setDraft(null);
+    setTplSaving(false);
+    setTplName('');
   };
   const patchDraft = (p: Partial<Draft>) => setDraft((d) => (d ? { ...d, ...p } : d));
   // the amount to split, in the GROUP currency (entered amount * fx rate)
   const draftTotal = () => {
     if (!draft) return 0;
     return (parseFloat(draft.amount) || 0) * (parseFloat(draft.fxRate) || 1);
+  };
+  // apply a saved split template to the current draft
+  const applyTemplate = (t: SplitTemplate) => {
+    if (!draft) return;
+    const g = groups.find((x) => x.id === draft.groupId);
+    if (!g) return;
+    if (t.splitType === 'equal') {
+      patchDraft({ splitType: 'equal', shares: {} });
+      return;
+    }
+    const shares: Record<string, string> = {};
+    g.members.forEach((m) => {
+      const v = t.values[m.id];
+      shares[m.id] = v !== undefined ? String(v) : t.splitType === 'shares' ? '1' : '0';
+    });
+    patchDraft({ splitType: t.splitType, shares });
+  };
+  // save the draft's current split config as a reusable, group-scoped template
+  const saveTemplate = () => {
+    if (!draft) return;
+    const g = groups.find((x) => x.id === draft.groupId);
+    if (!g) return;
+    const name = tplName.trim();
+    if (!name) return;
+    const values: Record<string, number> = {};
+    if (draft.splitType !== 'equal') {
+      g.members.forEach((m) => (values[m.id] = parseFloat(draft.shares[m.id]) || 0));
+    }
+    app.addSplitTemplate(g.id, { name, splitType: draft.splitType, values });
+    setTplSaving(false);
+    setTplName('');
   };
   // pick the expense's entry currency and prefill a suggested rate to the group currency
   const setDraftCurrency = (code: string) => {
@@ -1070,6 +1105,27 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                     return <button key={k} onClick={() => setMode(k)} style={{ flex: 1, padding: '7px 2px', borderRadius: 8, textAlign: 'center', background: active ? V.accent : 'transparent', color: active ? V.accentInk : V.dim, fontWeight: active ? 700 : 650, fontSize: 11.5 }}>{lbl}</button>;
                   })}
                 </div>
+
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: 11.5, color: V.faint, fontWeight: 600 }}>{tx.templates}</span>
+                  {(g!.splitTemplates || []).map((t) => (
+                    <span key={t.id} style={{ display: 'inline-flex', alignItems: 'center', gap: 2, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 999, padding: '4px 4px 4px 11px', fontSize: 12.5, fontWeight: 650 }}>
+                      <button onClick={() => applyTemplate(t)} style={{ color: V.text }}>{t.name}</button>
+                      <button onClick={() => app.deleteSplitTemplate(g!.id, t.id)} aria-label={`${tx.a11yDeleteTemplate} — ${t.name}`} style={{ color: V.faint, fontSize: 15, lineHeight: 1, padding: '0 3px' }}><span aria-hidden="true">×</span></button>
+                    </span>
+                  ))}
+                  {tplSaving ? (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 999, padding: '4px 5px 4px 11px' }}>
+                      <input value={tplName} onChange={(e) => setTplName(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && saveTemplate()} placeholder={tx.templateNamePlaceholder} aria-label={tx.templateNamePlaceholder} autoFocus style={{ width: 108, fontSize: 12.5, fontWeight: 600 }} />
+                      <button onClick={saveTemplate} style={{ padding: '4px 11px', borderRadius: 999, background: V.accent, color: V.accentInk, fontWeight: 700, fontSize: 12 }}>{tx.save}</button>
+                    </span>
+                  ) : (
+                    <button onClick={() => { setTplName(''); setTplSaving(true); }} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'transparent', border: `1px dashed ${V.border}`, borderRadius: 999, padding: '5px 12px', fontSize: 12.5, fontWeight: 700, color: V.accent }}>
+                      <Icon name="plus" size={13} color={V.accent} strokeWidth={2.5} />{tx.saveTemplate}
+                    </button>
+                  )}
+                </div>
+
                 <div style={{ ...surfaceCard, borderRadius: 16, overflow: 'hidden' }}>
                   {members.map((m) => {
                     const showFill = (mode === 'custom' && remainderAmt > 0.005) || (mode === 'percentage' && remainderPct > 0.005);

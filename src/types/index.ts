@@ -53,6 +53,14 @@ export interface Expense {
   createdAt: Date;
 }
 
+// A saved, reusable split configuration scoped to a group (its member ids).
+export interface SplitTemplate {
+  id: string;
+  name: string;
+  splitType: SplitType;
+  values: Record<string, number>; // raw per-member input (empty for 'equal')
+}
+
 // Settlement of a debt
 export interface Settlement {
   id: string;
@@ -77,6 +85,7 @@ export interface Group {
   members: Person[];
   expenses: Expense[];
   settlements: Settlement[];
+  splitTemplates?: SplitTemplate[]; // saved reusable split configs for this group
   createdAt: Date;
   updatedAt: Date;
 }
