@@ -102,6 +102,16 @@ export interface RedesignStrings {
   language: string;
   replayOnboarding: string;
 
+  // accessibility labels (for icon-only controls)
+  a11yBack: string;
+  a11yMenu: string;
+  a11yToggleTheme: string;
+  a11yCycleLanguage: string;
+  a11yClose: string;
+  a11yRemoveMember: string;
+  a11yAssignRemaining: string;
+  a11yCopyLink: string;
+
   // data ownership
   data: string;
   exportBackup: string;
@@ -206,6 +216,14 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: 'Thin, highly translucent glass with crisp specular edges. More liquid, more depth.',
     language: 'Language',
     replayOnboarding: 'Replay onboarding',
+    a11yBack: 'Go back',
+    a11yMenu: 'Group options',
+    a11yToggleTheme: 'Toggle light/dark theme',
+    a11yCycleLanguage: 'Change language',
+    a11yClose: 'Close',
+    a11yRemoveMember: 'Remove member',
+    a11yAssignRemaining: 'Assign remaining to this person',
+    a11yCopyLink: 'Copy share link',
     data: 'Data',
     exportBackup: 'Export backup (JSON)',
     exportCsv: 'Export expenses (CSV)',
@@ -306,6 +324,14 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: '薄く透明感のあるガラス。よりリキッドで奥行きのある表現。',
     language: '言語',
     replayOnboarding: 'チュートリアルを再生',
+    a11yBack: '戻る',
+    a11yMenu: 'グループのオプション',
+    a11yToggleTheme: 'ライト/ダークを切り替え',
+    a11yCycleLanguage: '言語を変更',
+    a11yClose: '閉じる',
+    a11yRemoveMember: 'メンバーを削除',
+    a11yAssignRemaining: '残りをこの人に割り当てる',
+    a11yCopyLink: '共有リンクをコピー',
     data: 'データ',
     exportBackup: 'バックアップを書き出す (JSON)',
     exportCsv: '支出を書き出す (CSV)',
@@ -406,6 +432,14 @@ export const redesignStrings: Record<Language, RedesignStrings> = {
     glassDescClear: '轻薄通透的玻璃，边缘高光清晰，更具流动感与层次。',
     language: '语言',
     replayOnboarding: '重新观看引导',
+    a11yBack: '返回',
+    a11yMenu: '群组选项',
+    a11yToggleTheme: '切换浅色/深色主题',
+    a11yCycleLanguage: '切换语言',
+    a11yClose: '关闭',
+    a11yRemoveMember: '移除成员',
+    a11yAssignRemaining: '把剩余分配给此人',
+    a11yCopyLink: '复制分享链接',
     data: '数据',
     exportBackup: '导出备份 (JSON)',
     exportCsv: '导出支出 (CSV)',

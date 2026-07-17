@@ -440,6 +440,18 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     reader.readAsText(file);
   };
 
+  // Esc closes the top-most overlay (confirm > sheet / group menu)
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (confirm) setConfirm(null);
+      else if (addOpen) closeAdd();
+      else if (groupMenuOpen) setGroupMenuOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [confirm, addOpen, groupMenuOpen]);
+
   // ============================================================
   // Onboarding gate
   // ============================================================
@@ -668,7 +680,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
         <label style={{ ...labelStyle({ margin: '0 2px 8px' }) }}>{tx.shareLink}</label>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', ...surfaceCard, borderRadius: 14, padding: '6px 6px 6px 15px' }}>
           <div style={{ flex: 1, fontSize: 13, color: V.dim, fontFamily: 'ui-monospace,monospace', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{url}</div>
-          <button onClick={() => copyLink(url)} style={{ padding: '9px 15px', borderRadius: 10, background: V.surface2, border: `1px solid ${V.border}`, fontWeight: 700, fontSize: 13, color: copied ? V.accent : V.text }}>{copied ? tx.copied : tx.copy}</button>
+          <button onClick={() => copyLink(url)} aria-label={tx.a11yCopyLink} style={{ padding: '9px 15px', borderRadius: 10, background: V.surface2, border: `1px solid ${V.border}`, fontWeight: 700, fontSize: 13, color: copied ? V.accent : V.text }}>{copied ? tx.copied : tx.copy}</button>
         </div>
         <div style={{ fontSize: 12.5, color: V.faint, margin: '8px 4px 0', lineHeight: 1.5 }}>{tx.inviteHint}</div>
 
@@ -677,12 +689,12 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
           {g.members.map((m) => (
             <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 14px', borderBottom: `1px solid ${V.border}` }}>
               <div style={{ width: 34, height: 34, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>{initials(m.name)}</div>
-              <input value={m.name} onChange={(e) => app.updatePerson(g.id, m.id, { name: e.target.value })} style={{ flex: 1, fontWeight: 650 }} />
-              <button onClick={() => requestRemoveMember(g, m.id)} style={{ color: V.faint, fontSize: 18, padding: '2px 6px' }}>×</button>
+              <input value={m.name} onChange={(e) => app.updatePerson(g.id, m.id, { name: e.target.value })} aria-label={`${tx.members} — ${m.name}`} style={{ flex: 1, fontWeight: 650 }} />
+              <button onClick={() => requestRemoveMember(g, m.id)} aria-label={`${tx.a11yRemoveMember} — ${m.name}`} style={{ color: V.faint, fontSize: 18, padding: '2px 6px' }}><span aria-hidden="true">×</span></button>
             </div>
           ))}
           <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 14px' }}>
-            <input value={newMember} onChange={(e) => setNewMember(e.target.value)} placeholder={tx.addMemberPlaceholder} style={{ flex: 1, fontWeight: 600 }} />
+            <input value={newMember} onChange={(e) => setNewMember(e.target.value)} placeholder={tx.addMemberPlaceholder} aria-label={tx.addMemberPlaceholder} style={{ flex: 1, fontWeight: 600 }} />
             <button onClick={() => { const n = newMember.trim(); if (n) { app.addPerson(g.id, n); setNewMember(''); } }} style={{ padding: '7px 13px', borderRadius: 10, background: V.surface2, border: `1px solid ${V.border}`, fontWeight: 700, fontSize: 13 }}>{tx.add}</button>
           </div>
         </div>
@@ -773,7 +785,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     return (
       <div style={{ animation: 'dc-screenIn .3s ease' }}>
         <label style={{ ...labelStyle({ margin: '0 2px 8px' }) }}>{tx.groupName}</label>
-        <input value={cgName} onChange={(e) => setCgName(e.target.value)} placeholder={tx.groupNamePlaceholder} style={{ width: '100%', padding: 15, borderRadius: 14, ...surfaceCard, fontWeight: 650 }} />
+        <input value={cgName} onChange={(e) => setCgName(e.target.value)} placeholder={tx.groupNamePlaceholder} aria-label={tx.groupName} style={{ width: '100%', padding: 15, borderRadius: 14, ...surfaceCard, fontWeight: 650 }} />
 
         <label style={{ ...labelStyle({ margin: '20px 2px 8px' }) }}>{tx.category}</label>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -801,12 +813,12 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
               {cgMembers.map((m) => (
                 <div key={m.id} style={{ display: 'flex', alignItems: 'center', gap: 11, padding: '11px 14px', borderBottom: `1px solid ${V.border}` }}>
                   <div style={{ width: 32, height: 32, borderRadius: '50%', background: m.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, fontSize: 12 }}>{initials(m.name)}</div>
-                  <input value={m.name} onChange={(e) => setCgMembers((prev) => prev.map((x) => (x.id === m.id ? { ...x, name: e.target.value } : x)))} style={{ flex: 1, fontWeight: 650 }} />
-                  <button onClick={() => setCgMembers((prev) => prev.filter((x) => x.id !== m.id))} style={{ color: V.faint, fontSize: 18, padding: '2px 6px' }}>×</button>
+                  <input value={m.name} onChange={(e) => setCgMembers((prev) => prev.map((x) => (x.id === m.id ? { ...x, name: e.target.value } : x)))} aria-label={`${tx.members} — ${m.name}`} style={{ flex: 1, fontWeight: 650 }} />
+                  <button onClick={() => setCgMembers((prev) => prev.filter((x) => x.id !== m.id))} aria-label={`${tx.a11yRemoveMember} — ${m.name}`} style={{ color: V.faint, fontSize: 18, padding: '2px 6px' }}><span aria-hidden="true">×</span></button>
                 </div>
               ))}
               <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '11px 14px' }}>
-                <input value={newMember} onChange={(e) => setNewMember(e.target.value)} placeholder={tx.addMemberPlaceholder} style={{ flex: 1, fontWeight: 600 }} />
+                <input value={newMember} onChange={(e) => setNewMember(e.target.value)} placeholder={tx.addMemberPlaceholder} aria-label={tx.addMemberPlaceholder} style={{ flex: 1, fontWeight: 600 }} />
                 <button onClick={addLocalMember} style={{ padding: '7px 13px', borderRadius: 10, background: V.surface2, border: `1px solid ${V.border}`, fontWeight: 700, fontSize: 13 }}>{tx.add}</button>
               </div>
             </div>
@@ -841,6 +853,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
         <TopBar
           showBack={false} showLogo title={readOnlyGroup?.name || 'SplitAA'} subtitle={tx.tagline}
           showMenu={false} themeGlyph={theme === 'light' ? '☾' : '☀'}
+          backLabel={tx.a11yBack} menuLabel={tx.a11yMenu} themeLabel={tx.a11yToggleTheme}
           onBack={() => {}} onMenu={() => {}} onTheme={toggleTheme}
         />
         <div style={{ position: 'relative', zIndex: 1, flex: 1, overflowY: 'auto', padding: '18px 18px 40px' }}>
@@ -858,6 +871,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
       <TopBar
         showBack={showBack} showLogo={showLogo} title={topTitle} subtitle={topSubtitle}
         showMenu={view === 'group'} themeGlyph={theme === 'light' ? '☾' : '☀'}
+        backLabel={tx.a11yBack} menuLabel={tx.a11yMenu} themeLabel={tx.a11yToggleTheme}
         onBack={back} onMenu={() => setGroupMenuOpen(true)} onTheme={toggleTheme}
       />
 
@@ -927,7 +941,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     return (
       <>
         <div onClick={closeAdd} style={{ position: 'absolute', inset: 0, zIndex: 20, background: 'rgba(6,8,14,.42)', animation: 'dc-scrimIn .25s ease' }} />
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 21, maxHeight: '92%', display: 'flex', flexDirection: 'column', borderRadius: '28px 28px 0 0', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, borderBottom: 'none', boxShadow: `0 -16px 50px rgba(0,0,0,.3), inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .32s cubic-bezier(.32,.72,0,1)' }}>
+        <div role="dialog" aria-modal="true" aria-label={draft.id ? tx.editExpense : tx.addExpense} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 21, maxHeight: '92%', display: 'flex', flexDirection: 'column', borderRadius: '28px 28px 0 0', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, borderBottom: 'none', boxShadow: `0 -16px 50px rgba(0,0,0,.3), inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .32s cubic-bezier(.32,.72,0,1)' }}>
           <div style={{ flex: 'none', padding: '12px 20px 6px' }}>
             <div style={{ width: 40, height: 5, borderRadius: 3, background: V.faint, opacity: 0.5, margin: '0 auto 12px' }} />
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -940,12 +954,12 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
             <div style={{ textAlign: 'center', padding: '18px 0 8px' }}>
               <div style={{ display: 'inline-flex', alignItems: 'baseline', gap: 4 }}>
                 <span style={{ fontSize: 30, fontWeight: 600, color: V.dim }}>{symbol}</span>
-                <input value={draft.amount} onChange={(e) => patchDraft({ amount: e.target.value.replace(/[^0-9.]/g, '') })} inputMode="decimal" placeholder="0" style={{ fontSize: 52, fontWeight: 800, letterSpacing: '-.04em', width: amountWidth, maxWidth: 230, textAlign: 'center' }} />
+                <input value={draft.amount} onChange={(e) => patchDraft({ amount: e.target.value.replace(/[^0-9.]/g, '') })} inputMode="decimal" placeholder="0" aria-label={tx.addExpense} style={{ fontSize: 52, fontWeight: 800, letterSpacing: '-.04em', width: amountWidth, maxWidth: 230, textAlign: 'center' }} />
               </div>
             </div>
-            <input value={draft.desc} onChange={(e) => patchDraft({ desc: e.target.value })} placeholder={tx.descPlaceholder} style={{ width: '100%', textAlign: 'center', fontSize: 16, fontWeight: 600, padding: 10, color: V.text }} />
+            <input value={draft.desc} onChange={(e) => patchDraft({ desc: e.target.value })} placeholder={tx.descPlaceholder} aria-label={tx.descPlaceholder} style={{ width: '100%', textAlign: 'center', fontSize: 16, fontWeight: 600, padding: 10, color: V.text }} />
 
-            <textarea value={draft.note} onChange={(e) => patchDraft({ note: e.target.value })} placeholder={tx.notePlaceholder} rows={2} style={{ width: '100%', marginTop: 6, resize: 'none', ...surfaceCard, borderRadius: 12, padding: '10px 12px', fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: V.text }} />
+            <textarea value={draft.note} onChange={(e) => patchDraft({ note: e.target.value })} placeholder={tx.notePlaceholder} aria-label={tx.notePlaceholder} rows={2} style={{ width: '100%', marginTop: 6, resize: 'none', ...surfaceCard, borderRadius: 12, padding: '10px 12px', fontSize: 14, fontWeight: 500, lineHeight: 1.45, color: V.text }} />
 
             {!draft.locked && (
               <>
@@ -1008,13 +1022,13 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
                         {mode !== 'equal' && (
                           <>
                             {showFill && (
-                              <button onClick={() => fillRemainingShare(m.id)} style={{ flex: 'none', width: 28, height: 28, borderRadius: 9, background: 'rgba(31,182,171,.14)', border: `1px solid ${V.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <button onClick={() => fillRemainingShare(m.id)} aria-label={`${tx.a11yAssignRemaining} — ${m.name}`} style={{ flex: 'none', width: 28, height: 28, borderRadius: 9, background: 'rgba(31,182,171,.14)', border: `1px solid ${V.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <Icon name="plus" size={14} color={V.accent} strokeWidth={2.5} />
                               </button>
                             )}
                             <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 3, background: V.surface2, border: `1px solid ${V.border}`, borderRadius: 10, padding: '6px 10px' }}>
                               {mode === 'custom' && <span style={{ fontSize: 13, color: V.dim }}>{symbol}</span>}
-                              <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode="decimal" style={{ width: mode === 'custom' ? 60 : 48, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
+                              <input value={draft.shares[m.id] ?? ''} onChange={(e) => setDraftShare(m.id, e.target.value)} inputMode="decimal" aria-label={`${tx.splitBetween} — ${m.name}`} style={{ width: mode === 'custom' ? 60 : 48, textAlign: 'right', fontWeight: 700, fontSize: 14 }} />
                               {mode === 'percentage' && <span style={{ fontSize: 13, color: V.dim }}>%</span>}
                               {mode === 'shares' && <span style={{ fontSize: 13, color: V.dim }}>×</span>}
                             </div>
@@ -1055,7 +1069,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     return (
       <>
         <div onClick={() => setGroupMenuOpen(false)} style={{ position: 'absolute', inset: 0, zIndex: 22, background: 'rgba(6,8,14,.42)', animation: 'dc-scrimIn .25s ease' }} />
-        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 23, padding: '8px 14px 20px', borderRadius: '28px 28px 0 0', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, borderBottom: 'none', boxShadow: `0 -16px 50px rgba(0,0,0,.3), inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .3s cubic-bezier(.32,.72,0,1)' }}>
+        <div role="dialog" aria-modal="true" aria-label={tx.a11yMenu} style={{ position: 'absolute', left: 0, right: 0, bottom: 0, zIndex: 23, padding: '8px 14px 20px', borderRadius: '28px 28px 0 0', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, borderBottom: 'none', boxShadow: `0 -16px 50px rgba(0,0,0,.3), inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .3s cubic-bezier(.32,.72,0,1)' }}>
           <div style={{ width: 40, height: 5, borderRadius: 3, background: V.faint, opacity: 0.5, margin: '6px auto 12px' }} />
           <button onClick={openEditGroup} style={{ width: '100%', textAlign: 'left', padding: '15px 14px', borderRadius: 14, fontWeight: 650, display: 'flex', alignItems: 'center', gap: 12, background: 'transparent' }}>
             <span style={{ display: 'inline-flex', color: V.text }}><Icon name="ui_edit" size={18} /></span>{tx.editGroup}
@@ -1074,7 +1088,7 @@ export default function AppShell({ initialGroupId, readOnly }: { initialGroupId?
     const c = confirm;
     return (
       <div onClick={() => setConfirm(null)} style={{ position: 'absolute', inset: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 28, background: 'rgba(6,8,14,.5)', animation: 'dc-scrimIn .2s ease' }}>
-        <div onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 340, borderRadius: 24, padding: '24px 22px 18px', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, boxShadow: `${V.glassShadow}, inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .28s cubic-bezier(.32,.72,0,1)' }}>
+        <div role="alertdialog" aria-modal="true" aria-label={c.title} onClick={(e) => e.stopPropagation()} style={{ width: '100%', maxWidth: 340, borderRadius: 24, padding: '24px 22px 18px', background: V.glassBg, WebkitBackdropFilter: 'blur(30px) saturate(180%)', backdropFilter: 'blur(30px) saturate(180%)', border: `1px solid ${V.glassBorder}`, boxShadow: `${V.glassShadow}, inset 0 1px 0 ${V.glassHi}`, animation: 'dc-sheetIn .28s cubic-bezier(.32,.72,0,1)' }}>
           {c.danger && (
             <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'rgba(224,100,74,.16)', color: V.neg, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <Icon name="ui_warn" size={24} color={V.neg} />
@@ -1112,20 +1126,21 @@ function Shell({ theme, glass, children }: { theme: string; glass: string; child
 interface TopBarProps {
   showBack: boolean; showLogo: boolean; title: string; subtitle?: string; showMenu: boolean;
   themeGlyph: string;
+  backLabel: string; menuLabel: string; themeLabel: string;
   onBack: () => void; onMenu: () => void; onTheme: () => void;
 }
-function TopBar({ showBack, showLogo, title, subtitle, showMenu, themeGlyph, onBack, onMenu, onTheme }: TopBarProps) {
+function TopBar({ showBack, showLogo, title, subtitle, showMenu, themeGlyph, backLabel, menuLabel, themeLabel, onBack, onMenu, onTheme }: TopBarProps) {
   const pill: CSSProperties = { width: 34, height: 34, borderRadius: 999, background: V.surface2, border: `1px solid ${V.border}`, fontSize: 14 };
   return (
-    <div style={{ position: 'relative', zIndex: 5, flex: 'none', padding: '14px 18px 12px', display: 'flex', alignItems: 'center', gap: 12, background: V.glassBg, WebkitBackdropFilter: backdrop, backdropFilter: backdrop, borderBottom: `1px solid ${V.glassBorder}`, boxShadow: `inset 0 1px 0 ${V.glassHi}` }}>
-      {showBack && <button onClick={onBack} style={{ width: 34, height: 34, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: V.text, marginLeft: -6 }}>‹</button>}
+    <header style={{ position: 'relative', zIndex: 5, flex: 'none', padding: '14px 18px 12px', display: 'flex', alignItems: 'center', gap: 12, background: V.glassBg, WebkitBackdropFilter: backdrop, backdropFilter: backdrop, borderBottom: `1px solid ${V.glassBorder}`, boxShadow: `inset 0 1px 0 ${V.glassHi}` }}>
+      {showBack && <button onClick={onBack} aria-label={backLabel} style={{ width: 34, height: 34, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, color: V.text, marginLeft: -6 }}><span aria-hidden="true">‹</span></button>}
       {showLogo && <img src="/splitaa-logo.svg" alt="SplitAA" width={34} height={34} style={{ display: 'block', flex: 'none' }} />}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 18, fontWeight: 750, letterSpacing: '-.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</div>
+        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 750, letterSpacing: '-.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h1>
         {subtitle ? <div style={{ fontSize: 12, color: V.dim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{subtitle}</div> : null}
       </div>
-      {showMenu && <button onClick={onMenu} style={{ width: 34, height: 34, borderRadius: 999, background: V.surface2, border: `1px solid ${V.border}`, fontSize: 19, fontWeight: 800, lineHeight: 1, letterSpacing: 1 }}>⋯</button>}
-      <button onClick={onTheme} style={pill}>{themeGlyph}</button>
-    </div>
+      {showMenu && <button onClick={onMenu} aria-label={menuLabel} style={{ width: 34, height: 34, borderRadius: 999, background: V.surface2, border: `1px solid ${V.border}`, fontSize: 19, fontWeight: 800, lineHeight: 1, letterSpacing: 1 }}><span aria-hidden="true">⋯</span></button>}
+      <button onClick={onTheme} aria-label={themeLabel} style={pill}><span aria-hidden="true">{themeGlyph}</span></button>
+    </header>
   );
 }

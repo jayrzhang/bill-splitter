@@ -35,8 +35,8 @@ export default function Onboarding() {
           <span style={{ fontWeight: 700, letterSpacing: '-.02em' }}>SplitAA</span>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={cycleLang} style={pillBtn}>{LANG_LABEL[language]}</button>
-          <button onClick={toggleTheme} style={{ ...pillBtn, width: 34, height: 34, padding: 0, fontSize: 14 }}>{theme === 'light' ? '☾' : '☀'}</button>
+          <button onClick={cycleLang} aria-label={tx.a11yCycleLanguage} style={pillBtn}>{LANG_LABEL[language]}</button>
+          <button onClick={toggleTheme} aria-label={tx.a11yToggleTheme} style={{ ...pillBtn, width: 34, height: 34, padding: 0, fontSize: 14 }}><span aria-hidden="true">{theme === 'light' ? '☾' : '☀'}</span></button>
         </div>
       </div>
 

@@ -69,8 +69,9 @@ The foundation is already live and is the thing every later phase builds on.
 - [ ] **Adjustment splits + reusable split templates.**
 - [ ] **Multi-currency done right:** per-expense currency + **FX rate captured at the
   expense's date**, so historical trips reconcile correctly instead of using today's rate.
-- [ ] **Accessibility pass:** full keyboard nav, screen-reader labels, reduced-motion mode,
-  AA contrast in both themes, dynamic type.
+- [x] **Accessibility pass:** keyboard focus rings, screen-reader labels on icon-only
+  controls + inputs, reduced-motion mode, dialog roles + Escape-to-close, heading/landmark
+  semantics. *(Remaining polish: full AA-contrast audit + dynamic-type sweep.)*
 
 ---
 
